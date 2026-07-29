@@ -1,0 +1,61 @@
+/**
+ * Admin bar More toggle for Tapio clean backend.
+ */
+
+:root {
+	--tapio-admin-bar-more-duration: 300ms;
+	--tapio-admin-bar-more-ease: ease;
+}
+
+#wpadminbar:not(.tapio-admin-bar-more-is-open) #wp-admin-bar-root-default > li.tapio-admin-bar-more-item {
+	display: none !important;
+}
+
+#wpadminbar #wp-admin-bar-tapio-clean-admin-more > .ab-item .ab-icon {
+	float: left;
+	margin-right: 6px;
+	padding: 4px 0;
+	font: normal 20px/1 dashicons;
+}
+
+#wpadminbar #wp-admin-bar-tapio-clean-admin-more .ab-icon:before {
+	top: 3px;
+}
+
+#wpadminbar #wp-admin-bar-tapio-clean-admin-more .ab-label {
+	position: relative;
+	padding-right: 18px;
+}
+
+#wpadminbar #wp-admin-bar-tapio-clean-admin-more .ab-label::after {
+	content: "\f347";
+	font-family: dashicons;
+	font-size: 16px;
+	line-height: 1;
+	position: absolute;
+	right: 0;
+	top: 50%;
+	transform: translateY(-50%) rotate(0deg);
+	color: rgba(240, 246, 252, 0.6);
+	transition: transform var(--tapio-admin-bar-more-duration) var(--tapio-admin-bar-more-ease);
+}
+
+#wpadminbar.tapio-admin-bar-more-is-open #wp-admin-bar-tapio-clean-admin-more .ab-label::after {
+	transform: translateY(-50%) rotate(180deg);
+}
+
+#wpadminbar.tapio-admin-bar-more-is-open #wp-admin-bar-tapio-clean-admin-more > .ab-item .ab-label,
+#wpadminbar.tapio-admin-bar-more-is-open #wp-admin-bar-tapio-clean-admin-more > .ab-item .ab-icon:before {
+	color: #72aee6;
+}
+
+#wpadminbar.tapio-admin-bar-more-ready #wp-admin-bar-root-default > li.tapio-admin-bar-more-item {
+	transition: opacity var(--tapio-admin-bar-more-duration) var(--tapio-admin-bar-more-ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	#wpadminbar #wp-admin-bar-tapio-clean-admin-more .ab-label::after,
+	#wpadminbar.tapio-admin-bar-more-ready #wp-admin-bar-root-default > li.tapio-admin-bar-more-item {
+		transition: none;
+	}
+}

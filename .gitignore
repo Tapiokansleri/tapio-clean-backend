@@ -1,0 +1,5 @@
+.DS_Store
+Thumbs.db
+*.log
+languages/_compile.php
+languages/compile-mo.php

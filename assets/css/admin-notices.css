@@ -1,0 +1,121 @@
+/**
+ * Admin bar Notifications panel styles for Tapio clean backend.
+ */
+
+/* Hide notices in the content area; they are relocated into the admin bar. */
+body.tapio-clean-hide-notices #wpbody-content > .notice,
+body.tapio-clean-hide-notices #wpbody-content > .update-nag,
+body.tapio-clean-hide-notices #wpbody-content > .updated,
+body.tapio-clean-hide-notices #wpbody-content > .error,
+body.tapio-clean-hide-notices #wpbody-content > .wrap > .notice,
+body.tapio-clean-hide-notices #wpbody-content > .wrap > .update-nag,
+body.tapio-clean-hide-notices #wpbody-content > .wrap > .updated,
+body.tapio-clean-hide-notices #wpbody-content > .wrap > .error,
+body.tapio-clean-hide-notices #wpbody-content > div[class*="notice"]:not(.tapio-clean-keep),
+body.tapio-clean-hide-notices #wpbody-content > .wrap > div[class*="notice"]:not(.tapio-clean-keep) {
+	display: none !important;
+}
+
+#wpadminbar #wp-admin-bar-tapio-clean-notifications > .ab-item .ab-icon {
+	float: left;
+	margin-right: 6px;
+	padding: 4px 0;
+	font: normal 20px/1 dashicons;
+}
+
+#wpadminbar #wp-admin-bar-tapio-clean-notifications .ab-icon:before {
+	top: 3px;
+}
+
+#wpadminbar .tapio-clean-notice-badge {
+	display: inline-block;
+	min-width: 18px;
+	height: 18px;
+	margin-left: 6px;
+	padding: 0 5px;
+	border-radius: 9px;
+	background: #d63638;
+	color: #fff;
+	font-size: 11px;
+	font-weight: 600;
+	line-height: 18px;
+	text-align: center;
+	vertical-align: middle;
+}
+
+#wpadminbar .tapio-clean-notice-badge[hidden] {
+	display: none !important;
+}
+
+#wpadminbar .tapio-clean-notifications-panel-wrap > .ab-item {
+	height: auto !important;
+	padding: 0 !important;
+}
+
+#wpadminbar .tapio-clean-notifications-root .ab-submenu {
+	width: min(520px, 92vw);
+	max-width: 92vw;
+	padding: 0;
+}
+
+#wpadminbar .tapio-clean-notices-panel {
+	box-sizing: border-box;
+	max-height: 70vh;
+	overflow: auto;
+	padding: 12px;
+	background: #f0f0f1;
+	color: #1d2327;
+	text-align: left;
+	white-space: normal;
+	line-height: 1.5;
+	font-size: 13px;
+}
+
+#wpadminbar .tapio-clean-notices-panel .tapio-clean-notices-empty {
+	margin: 0;
+	padding: 8px 4px;
+	color: #646970;
+}
+
+#wpadminbar .tapio-clean-notices-panel .notice,
+#wpadminbar .tapio-clean-notices-panel .update-nag,
+#wpadminbar .tapio-clean-notices-panel .updated,
+#wpadminbar .tapio-clean-notices-panel .error,
+#wpadminbar .tapio-clean-notices-panel [class*="notice"] {
+	display: block !important;
+	position: relative;
+	margin: 0 0 12px;
+	padding: 12px;
+	box-shadow: none;
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-left-width: 4px;
+	max-width: 100%;
+}
+
+#wpadminbar .tapio-clean-notices-panel .notice:last-child,
+#wpadminbar .tapio-clean-notices-panel .update-nag:last-child,
+#wpadminbar .tapio-clean-notices-panel .updated:last-child,
+#wpadminbar .tapio-clean-notices-panel .error:last-child,
+#wpadminbar .tapio-clean-notices-panel [class*="notice"]:last-child {
+	margin-bottom: 0;
+}
+
+#wpadminbar .tapio-clean-notices-panel a {
+	color: #2271b1;
+	text-decoration: underline;
+}
+
+#wpadminbar .tapio-clean-notices-panel .button {
+	display: inline-block;
+	text-decoration: none;
+	color: #2271b1;
+}
+
+#wpadminbar .tapio-clean-notices-panel .button-primary {
+	color: #fff;
+}
+
+.tapio-clean-notices-source[hidden] {
+	display: none !important;
+}

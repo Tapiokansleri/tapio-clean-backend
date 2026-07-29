@@ -1,0 +1,23 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Tapio clean backend 0.0.1\n"
+"Language: fi_FI\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Domain: tapio-clean-backend\n"
+
+#: includes/class-more-menu.php:75
+msgid "More"
+msgstr "Lisää"
+
+#: includes/class-admin-bar-notifications.php:76
+#: includes/class-admin-bar-notifications.php:80
+msgid "Notifications"
+msgstr "Ilmoitukset"
+
+#: includes/class-admin-bar-notifications.php:90
+#: includes/class-admin-bar-notifications.php:134
+msgid "No notifications"
+msgstr "Ei ilmoituksia"

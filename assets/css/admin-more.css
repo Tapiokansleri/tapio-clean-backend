@@ -1,0 +1,151 @@
+/**
+ * More toggle for Tapio clean backend.
+ */
+
+:root {
+	--tapio-more-duration: 300ms;
+	--tapio-more-ease: ease;
+}
+
+/* Collapsed: animate height + fade (no display:none — that cannot transition). */
+#adminmenu > li.tapio-more-item {
+	max-height: 0;
+	height: 0;
+	opacity: 0;
+	margin-top: 0;
+	margin-bottom: 0;
+	padding: 0;
+	border: none;
+	pointer-events: none;
+	visibility: hidden;
+}
+
+#adminmenu:not(.tapio-more-is-open) > li.tapio-more-item {
+	overflow: hidden;
+	min-height: 0 !important;
+}
+
+#adminmenu:not(.tapio-more-is-open) > li.tapio-more-item .wp-submenu {
+	display: none !important;
+}
+
+#adminmenu.tapio-more-ready > li.tapio-more-item {
+	transition:
+		max-height var(--tapio-more-duration) var(--tapio-more-ease),
+		opacity var(--tapio-more-duration) var(--tapio-more-ease),
+		visibility 0s linear var(--tapio-more-duration);
+}
+
+#adminmenu.tapio-more-is-open > li.tapio-more-item {
+	/* Large cap so open/close can animate; must exceed inline submenus (wp-has-current-submenu). */
+	max-height: 2000px;
+	height: auto;
+	opacity: 1;
+	overflow: visible;
+	pointer-events: auto;
+	visibility: visible;
+	flex-shrink: 0;
+	transition:
+		max-height var(--tapio-more-duration) var(--tapio-more-ease),
+		opacity var(--tapio-more-duration) var(--tapio-more-ease),
+		visibility 0s;
+}
+
+#adminmenu.tapio-more-is-open > li.tapio-more-item.wp-has-current-submenu,
+#adminmenu.tapio-more-is-open > li.tapio-more-item.wp-menu-open {
+	max-height: none;
+}
+
+#adminmenu.tapio-more-is-open li.tapio-more-item.opensub,
+#adminmenu.tapio-more-is-open li.tapio-more-item.menu-top:hover,
+#adminmenu.tapio-more-is-open li.tapio-more-item:focus-within {
+	z-index: 10000;
+}
+
+/* Keep "Piilota valikko" at the bottom when the visible menu is short. */
+@media screen and (min-width: 783px) {
+	body:not(.folded) #adminmenuwrap {
+		display: flex;
+		flex-direction: column;
+		min-height: calc(100vh - 32px);
+	}
+
+	body:not(.folded) #adminmenu {
+		display: flex;
+		flex: 1 1 auto;
+		flex-direction: column;
+		width: 100%;
+		overflow: visible;
+	}
+
+	body:not(.folded) #adminmenu #collapse-menu {
+		margin-top: auto;
+		flex-shrink: 0;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	#adminmenu.tapio-more-ready > li.tapio-more-item {
+		transition: none;
+	}
+}
+
+/* More toggle stays visible. */
+#adminmenu:not(.tapio-more-is-open) > li.tapio-more-toggle-item {
+	display: list-item !important;
+}
+
+#adminmenu > #toplevel_page_tapio-clean-more,
+#adminmenu > li.tapio-more-hub-item,
+#tapio-more-accordion {
+	display: none !important;
+}
+
+#adminmenu .tapio-more-toggle-item {
+	border-top: 1px solid #2c3338;
+}
+
+/* More is a section header, not the active admin screen. */
+#adminmenu .tapio-more-toggle-item.current > a.menu-top,
+#adminmenu .tapio-more-toggle-item.wp-has-current-submenu > a.menu-top {
+	background: transparent;
+	color: #c3c4c7;
+}
+
+#adminmenu.tapio-more-is-open .tapio-more-toggle-item > a.menu-top {
+	color: #72aee6;
+}
+
+#adminmenu .tapio-more-toggle-item > a.menu-top {
+	cursor: pointer;
+}
+
+/* Chevron on label (same row as core menu items). */
+#adminmenu .tapio-more-toggle-item .wp-menu-name {
+	position: relative;
+	padding-right: 28px !important;
+}
+
+#adminmenu .tapio-more-toggle-item .wp-menu-name::after {
+	content: "\f347";
+	font-family: dashicons;
+	font-size: 16px;
+	line-height: 1;
+	position: absolute;
+	right: 8px;
+	top: 50%;
+	transform: translateY(-50%) rotate(0deg);
+	color: #a7aaad;
+	speak: never;
+	-webkit-font-smoothing: antialiased;
+	transition: transform var(--tapio-more-duration) var(--tapio-more-ease), color 200ms ease;
+}
+
+#adminmenu.tapio-more-is-open .tapio-more-toggle-item .wp-menu-name::after {
+	transform: translateY(-50%) rotate(180deg);
+}
+
+#adminmenu .tapio-more-toggle-item:hover .wp-menu-name::after,
+#adminmenu .tapio-more-toggle-item > a.menu-top:focus .wp-menu-name::after {
+	color: #72aee6;
+}

@@ -1,0 +1,58 @@
+<?php
+/**
+ * Plugin Name: Tapio clean backend
+ * Description: Collapses plugin admin menus under a More accordion, plugin admin bar items under More, and moves admin notices into an admin bar Notifications hub.
+ * Version:     0.0.1
+ * Author:      Tapio
+ * License:     GPL-2.0-or-later
+ * Text Domain: tapio-clean-backend
+ * Requires at least: 6.4
+ * Requires PHP: 7.4
+ *
+ * @package Tapio\CleanBackend
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+define( 'TAPIO_CLEAN_BACKEND_VERSION', '0.0.1' );
+define( 'TAPIO_CLEAN_BACKEND_FILE', __FILE__ );
+define( 'TAPIO_CLEAN_BACKEND_DIR', plugin_dir_path( __FILE__ ) );
+define( 'TAPIO_CLEAN_BACKEND_URL', plugin_dir_url( __FILE__ ) );
+
+/**
+ * Autoloads plugin classes from the includes directory.
+ *
+ * Maps Tapio\CleanBackend\Menu_Classifier to includes/class-menu-classifier.php.
+ *
+ * @param string $class_name Fully qualified class name.
+ * @return void
+ */
+function tapio_clean_backend_autoload( $class_name ) {
+	$prefix = 'Tapio\\CleanBackend\\';
+
+	if ( 0 !== strpos( $class_name, $prefix ) ) {
+		return;
+	}
+
+	$relative = substr( $class_name, strlen( $prefix ) );
+	$slug     = strtolower( str_replace( '_', '-', $relative ) );
+	$path     = TAPIO_CLEAN_BACKEND_DIR . 'includes/class-' . $slug . '.php';
+
+	if ( is_readable( $path ) ) {
+		require_once $path;
+	}
+}
+spl_autoload_register( 'tapio_clean_backend_autoload' );
+
+add_action(
+	'plugins_loaded',
+	static function () {
+		if ( ! apply_filters( 'tapio_clean_backend_enabled', true ) ) {
+			return;
+		}
+
+		Tapio\CleanBackend\Plugin::instance()->boot();
+	}
+);
