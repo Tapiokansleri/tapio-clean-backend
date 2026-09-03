@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Tapio clean backend 0.0.1\n"
+"Project-Id-Version: Tapio Clean Backend 1.0.0\n"
 "Language: fi\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -8,16 +8,54 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Domain: tapio-clean-backend\n"
 
-#: includes/class-more-menu.php:75
+#: includes/class-more-menu.php:59
 msgid "More"
 msgstr "Lisää"
 
 #: includes/class-admin-bar-notifications.php:76
 #: includes/class-admin-bar-notifications.php:80
+#: includes/class-settings.php:176
 msgid "Notifications"
 msgstr "Ilmoitukset"
 
-#: includes/class-admin-bar-notifications.php:90
-#: includes/class-admin-bar-notifications.php:134
+#: includes/class-admin-bar-notifications.php:91
+#: includes/class-admin-bar-notifications.php:137
 msgid "No notifications"
 msgstr "Ei ilmoituksia"
+
+#: includes/class-settings.php:120
+msgid "Settings"
+msgstr "Asetukset"
+
+#: includes/class-settings.php:134
+#: includes/class-settings.php:135
+msgid "Tapio Clean Backend"
+msgstr "Tapio Clean Backend"
+
+#: includes/class-settings.php:161
+msgid "Features"
+msgstr "Toiminnot"
+
+#: includes/class-settings.php:168
+msgid "Sidebar More"
+msgstr "Sivupalkin Lisää"
+
+#: includes/class-settings.php:206
+msgid "Nothing is removed. These switches only choose which rearrangements are active."
+msgstr "Mitään ei poisteta. Näillä kytkimillä valitset vain, mitkä uudelleenjärjestelyt ovat käytössä."
+
+#: includes/class-settings.php:226
+msgid "Collapse plugin and custom post type menus under More"
+msgstr "Tiivistä lisäosien ja mukautettujen sisältötyyppien valikot Lisää-osion alle"
+
+#: includes/class-settings.php:229
+msgid "Core menus stay in the sidebar. Plugin menus remain available inside the More section."
+msgstr "WordPressin ydinvalikot pysyvät sivupalkissa. Lisäosien valikot ovat edelleen käytettävissä Lisää-osiossa."
+
+#: includes/class-settings.php:251
+msgid "Move admin notices into the Notifications panel in the admin bar"
+msgstr "Siirrä ylläpidon ilmoitukset ilmoituspalkin Ilmoitukset-paneeliin"
+
+#: includes/class-settings.php:254
+msgid "Notices are not discarded. They appear in the admin bar with a badge count."
+msgstr "Ilmoituksia ei hävitetä. Ne näkyvät ilmoituspalkissa merkin kanssa."

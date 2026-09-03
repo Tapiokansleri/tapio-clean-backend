@@ -10,6 +10,8 @@
 	var moreLabel = config.moreLabel || 'More';
 	var openClass = 'tapio-more-is-open';
 	var readyClass = 'tapio-more-ready';
+	var enhancedClass = 'tapio-more-enhanced';
+	var itemsId = 'tapio-more-items';
 
 	function isOpen() {
 		try {
@@ -39,33 +41,11 @@
 		}
 	}
 
-	function removeLegacyAccordion(adminmenu) {
-		var legacy = document.getElementById('tapio-more-accordion');
-		if (!legacy || !legacy.parentNode) {
-			return;
-		}
-
-		var panel = legacy.querySelector('.tapio-more-panel');
-		var anchor = getCollapseMenu(adminmenu);
-
-		if (panel) {
-			Array.prototype.forEach.call(panel.querySelectorAll('li'), function (li) {
-				if (anchor) {
-					adminmenu.insertBefore(li, anchor);
-				} else {
-					adminmenu.appendChild(li);
-				}
-			});
-		}
-
-		legacy.parentNode.removeChild(legacy);
-	}
-
-	function removePhpHub(adminmenu) {
-		var hub = adminmenu.querySelector('#toplevel_page_tapio-clean-more, li.tapio-more-hub-item');
-		if (hub && hub.parentNode) {
-			hub.parentNode.removeChild(hub);
-		}
+	function toggleOpen(adminmenu) {
+		var open = !adminmenu.classList.contains(openClass);
+		applyOpenState(adminmenu, open);
+		setOpen(open);
+		orderMoreItems(adminmenu);
 	}
 
 	function ensureToggle(adminmenu) {
@@ -80,6 +60,7 @@
 		var toggleLink = document.createElement('a');
 		toggleLink.href = '#';
 		toggleLink.className = 'menu-top tapio-more-toggle';
+		toggleLink.setAttribute('role', 'button');
 		toggleLink.setAttribute('aria-expanded', 'false');
 
 		var icon = document.createElement('div');
@@ -105,10 +86,16 @@
 		toggleLink.addEventListener('click', function (event) {
 			event.preventDefault();
 			event.stopImmediatePropagation();
-			var open = !adminmenu.classList.contains(openClass);
-			applyOpenState(adminmenu, open);
-			setOpen(open);
-			orderMoreItems(adminmenu);
+			toggleOpen(adminmenu);
+		});
+
+		toggleLink.addEventListener('keydown', function (event) {
+			if (event.key !== 'Enter' && event.key !== ' ') {
+				return;
+			}
+			event.preventDefault();
+			event.stopImmediatePropagation();
+			toggleOpen(adminmenu);
 		});
 
 		return toggleLi;
@@ -139,6 +126,18 @@
 		items.forEach(function (li) {
 			adminmenu.insertBefore(li, collapse);
 		});
+
+		var toggleLink = toggle.querySelector('.tapio-more-toggle');
+		if (toggleLink) {
+			if (items.length) {
+				if (!items[0].id) {
+					items[0].id = itemsId;
+				}
+				toggleLink.setAttribute('aria-controls', items[0].id);
+			} else {
+				toggleLink.removeAttribute('aria-controls');
+			}
+		}
 	}
 
 	function enableTransitions(adminmenu) {
@@ -153,10 +152,9 @@
 			return;
 		}
 
-		removeLegacyAccordion(adminmenu);
-		removePhpHub(adminmenu);
 		ensureToggle(adminmenu);
 		orderMoreItems(adminmenu);
+		adminmenu.classList.add(enhancedClass);
 
 		var hasCurrent = !!adminmenu.querySelector(
 			'li.' + moreItemClass + '.current, li.' + moreItemClass + '.wp-has-current-submenu, li.' + moreItemClass + '.opensub'

@@ -1,11 +1,15 @@
 <?php
 /**
- * Plugin Name: Tapio clean backend
- * Description: Collapses plugin admin menus under a More accordion, plugin admin bar items under More, and moves admin notices into an admin bar Notifications hub.
- * Version:     0.0.1
- * Author:      Tapio
+ * Plugin Name: Tapio Clean Backend
+ * Plugin URI:  https://github.com/Tapiokansleri/tapio-clean-backend
+ * Description: Collapses plugin admin menus under a More accordion and moves admin notices into an admin bar Notifications hub.
+ * Version:     1.0.0
+ * Author:      Tapio Kauranen
+ * Author URI:  https://tapiokauranen.com
  * License:     GPL-2.0-or-later
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: tapio-clean-backend
+ * Domain Path: /languages
  * Requires at least: 6.4
  * Requires PHP: 7.4
  *
@@ -16,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'TAPIO_CLEAN_BACKEND_VERSION', '0.0.1' );
+define( 'TAPIO_CLEAN_BACKEND_VERSION', '1.0.0' );
 define( 'TAPIO_CLEAN_BACKEND_FILE', __FILE__ );
 define( 'TAPIO_CLEAN_BACKEND_DIR', plugin_dir_path( __FILE__ ) );
 define( 'TAPIO_CLEAN_BACKEND_URL', plugin_dir_url( __FILE__ ) );

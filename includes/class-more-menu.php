@@ -17,28 +17,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 class More_Menu {
 
 	/**
-	 * Menu classifier.
-	 *
-	 * @var Menu_Classifier
-	 */
-	private $classifier;
-
-	/**
-	 * Constructor.
-	 *
-	 * @param Menu_Classifier $classifier Menu classifier.
-	 */
-	public function __construct( Menu_Classifier $classifier ) {
-		$this->classifier = $classifier;
-	}
-
-	/**
 	 * Registers hooks.
 	 *
 	 * @return void
 	 */
 	public function register() {
-		if ( ! is_admin() ) {
+		if ( ! is_admin() || is_network_admin() ) {
 			return;
 		}
 

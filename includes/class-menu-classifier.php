@@ -17,13 +17,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Menu_Classifier {
 
 	/**
-	 * Menu slug for the More hub.
-	 *
-	 * @var string
-	 */
-	const MORE_SLUG = 'tapio-clean-more';
-
-	/**
 	 * CSS class applied to menus that should move into More.
 	 *
 	 * @var string
@@ -43,6 +36,10 @@ class Menu_Classifier {
 	 * @return void
 	 */
 	public function register() {
+		if ( is_network_admin() ) {
+			return;
+		}
+
 		add_action( 'admin_menu', array( $this, 'classify_menus' ), 999999 );
 	}
 
@@ -135,8 +132,8 @@ class Menu_Classifier {
 
 			$classes = isset( $item[4] ) ? (string) $item[4] : '';
 			if ( false === strpos( $classes, self::MORE_ITEM_CLASS ) ) {
-				$classes                = trim( $classes . ' ' . self::MORE_ITEM_CLASS );
-				$menu[ $index ][4]      = $classes;
+				$classes           = trim( $classes . ' ' . self::MORE_ITEM_CLASS );
+				$menu[ $index ][4] = $classes;
 			}
 
 			$this->moved_slugs[] = $slug;
@@ -176,17 +173,5 @@ class Menu_Classifier {
 		}
 
 		return false;
-	}
-
-	/**
-	 * Points active highlighting at the More hub when viewing a relocated menu.
-	 *
-	 * @param string $parent_file Current parent file.
-	 * @return string
-	 */
-	public function filter_parent_file( $parent_file ) {
-		// Deprecated: relocated menus keep their own parent_file so core
-		// highlighting stays on the original item inside More.
-		return $parent_file;
 	}
 }

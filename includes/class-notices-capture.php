@@ -45,6 +45,13 @@ class Notices_Capture {
 	private $captured = false;
 
 	/**
+	 * Whether captured HTML was delivered to the admin footer payload.
+	 *
+	 * @var bool
+	 */
+	private $delivered = false;
+
+	/**
 	 * Registers hooks.
 	 *
 	 * @return void
@@ -60,10 +67,9 @@ class Notices_Capture {
 		add_action( 'network_admin_notices', array( $this, 'start_buffer' ), -999999 );
 		add_action( 'all_admin_notices', array( $this, 'end_buffer' ), PHP_INT_MAX );
 
-		add_action( 'shutdown', array( $this, 'end_buffer' ), 0 );
+		add_action( 'shutdown', array( $this, 'flush_undelivered' ), 0 );
 
 		add_filter( 'admin_body_class', array( $this, 'body_class' ) );
-		add_action( 'admin_head', array( $this, 'print_hide_css' ), 1 );
 	}
 
 	/**
@@ -75,27 +81,6 @@ class Notices_Capture {
 	public function body_class( $classes ) {
 		$classes .= ' tapio-clean-hide-notices';
 		return $classes;
-	}
-
-	/**
-	 * Prints early CSS so notices never flash in the content area.
-	 *
-	 * @return void
-	 */
-	public function print_hide_css() {
-		echo '<style id="tapio-clean-hide-notices-css">'
-			. 'body.wp-admin #wpbody-content > .notice,'
-			. 'body.wp-admin #wpbody-content > .update-nag,'
-			. 'body.wp-admin #wpbody-content > .updated,'
-			. 'body.wp-admin #wpbody-content > .error,'
-			. 'body.wp-admin #wpbody-content > .wrap > .notice,'
-			. 'body.wp-admin #wpbody-content > .wrap > .update-nag,'
-			. 'body.wp-admin #wpbody-content > .wrap > .updated,'
-			. 'body.wp-admin #wpbody-content > .wrap > .error,'
-			. 'body.wp-admin #wpbody-content > .e-notice,'
-			. 'body.wp-admin #wpbody-content > .wrap > .e-notice'
-			. '{display:none!important;}'
-			. '</style>';
 	}
 
 	/**
@@ -137,6 +122,9 @@ class Notices_Capture {
 	/**
 	 * Ends buffering after all_admin_notices and stores the HTML.
 	 *
+	 * Closes only our buffer level (and nested buffers opened inside it).
+	 * Never closes buffers that existed before we started.
+	 *
 	 * @return void
 	 */
 	public function end_buffer() {
@@ -146,28 +134,17 @@ class Notices_Capture {
 
 		$html = '';
 
-		/*
-		 * Fold nested buffers opened by notice callbacks back into ours, then
-		 * capture our level. If a callback already closed our buffer, fall back
-		 * to collecting whatever nested content remains (CSS/JS hide leftovers).
-		 */
 		while ( ob_get_level() > $this->buffer_level ) {
 			$nested = ob_get_clean();
-			if ( ! is_string( $nested ) || '' === $nested ) {
-				continue;
-			}
-
-			if ( ob_get_level() >= $this->buffer_level && $this->buffer_level > 0 ) {
-				echo $nested; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Re-inject into our capture buffer only.
-			} else {
-				$html .= $nested;
+			if ( is_string( $nested ) && '' !== $nested ) {
+				$html = $nested . $html;
 			}
 		}
 
-		if ( $this->buffer_level > 0 && ob_get_level() >= $this->buffer_level ) {
+		if ( $this->buffer_level > 0 && ob_get_level() === $this->buffer_level ) {
 			$captured = ob_get_clean();
 			if ( is_string( $captured ) ) {
-				$html .= $captured;
+				$html = $captured . $html;
 			}
 		}
 
@@ -178,21 +155,39 @@ class Notices_Capture {
 	}
 
 	/**
-	 * Whether notices were captured for this request.
-	 *
-	 * @return bool
-	 */
-	public function was_captured() {
-		return $this->captured;
-	}
-
-	/**
 	 * Ensures buffering is closed (e.g. before footer output).
 	 *
 	 * @return void
 	 */
 	public function finalize_capture() {
 		$this->end_buffer();
+	}
+
+	/**
+	 * Marks captured HTML as delivered to the admin bar payload.
+	 *
+	 * @return void
+	 */
+	public function mark_delivered() {
+		$this->delivered = true;
+	}
+
+	/**
+	 * On shutdown, flush captured notices that never reached admin_footer
+	 * (redirects, wp_die) so they are not lost.
+	 *
+	 * @return void
+	 */
+	public function flush_undelivered() {
+		$this->end_buffer();
+
+		if ( $this->delivered || '' === $this->html ) {
+			return;
+		}
+
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Admin notice HTML from plugins/core.
+		echo $this->html;
+		$this->delivered = true;
 	}
 
 	/**
@@ -211,23 +206,5 @@ class Notices_Capture {
 	 */
 	public function has_notices() {
 		return '' !== $this->html;
-	}
-
-	/**
-	 * Counts top-level notice elements in the captured HTML.
-	 *
-	 * @return int
-	 */
-	public function get_count() {
-		if ( '' === $this->html ) {
-			return 0;
-		}
-
-		$count = preg_match_all(
-			'/<div\b[^>]*\bclass=(["\'])[^"\']*\b(?:notice|update-nag|e-notice)\b[^"\']*\1[^>]*>/i',
-			$this->html
-		);
-
-		return is_int( $count ) ? $count : 0;
 	}
 }

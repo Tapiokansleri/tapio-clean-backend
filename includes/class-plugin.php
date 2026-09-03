@@ -56,43 +56,23 @@ class Plugin {
 	 * @return void
 	 */
 	public function boot() {
-		load_plugin_textdomain(
-			'tapio-clean-backend',
-			false,
-			dirname( plugin_basename( TAPIO_CLEAN_BACKEND_FILE ) ) . '/languages'
-		);
+		$settings = new Settings();
+		$settings->register();
 
-		$this->menu_classifier = new Menu_Classifier();
-		$this->notices_capture = new Notices_Capture();
+		if ( Settings::is_sidebar_enabled() ) {
+			$this->menu_classifier = new Menu_Classifier();
+			$this->menu_classifier->register();
 
-		$this->menu_classifier->register();
-		$this->notices_capture->register();
+			$more_menu = new More_Menu();
+			$more_menu->register();
+		}
 
-		$admin_bar = new Admin_Bar_Notifications( $this->notices_capture );
-		$admin_bar->register();
+		if ( Settings::is_notices_enabled() ) {
+			$this->notices_capture = new Notices_Capture();
+			$this->notices_capture->register();
 
-		$more_menu = new More_Menu( $this->menu_classifier );
-		$more_menu->register();
-
-		$admin_bar_more = new Admin_Bar_More();
-		$admin_bar_more->register();
-	}
-
-	/**
-	 * Returns the notices capture service.
-	 *
-	 * @return Notices_Capture
-	 */
-	public function notices_capture() {
-		return $this->notices_capture;
-	}
-
-	/**
-	 * Returns the menu classifier service.
-	 *
-	 * @return Menu_Classifier
-	 */
-	public function menu_classifier() {
-		return $this->menu_classifier;
+			$admin_bar = new Admin_Bar_Notifications( $this->notices_capture );
+			$admin_bar->register();
+		}
 	}
 }

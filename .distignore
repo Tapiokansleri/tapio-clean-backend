@@ -1,0 +1,12 @@
+.git
+.github
+.gitignore
+.distignore
+.DS_Store
+Thumbs.db
+*.log
+bin
+node_modules
+*.po
+languages/_compile.php
+languages/compile-mo.php

@@ -77,8 +77,9 @@ class Admin_Bar_Notifications {
 				),
 				'href'  => false,
 				'meta'  => array(
-					'title' => __( 'Notifications', 'tapio-clean-backend' ),
-					'class' => 'tapio-clean-notifications-root',
+					'title'    => __( 'Notifications', 'tapio-clean-backend' ),
+					'class'    => 'tapio-clean-notifications-root',
+					'tabindex' => '0',
 				),
 			)
 		);
@@ -112,7 +113,7 @@ class Admin_Bar_Notifications {
 		wp_enqueue_script(
 			'tapio-clean-backend-notices',
 			TAPIO_CLEAN_BACKEND_URL . 'assets/js/admin-notices.js',
-			array(),
+			array( 'jquery', 'common' ),
 			TAPIO_CLEAN_BACKEND_VERSION,
 			true
 		);
@@ -130,10 +131,10 @@ class Admin_Bar_Notifications {
 
 		$this->capture->finalize_capture();
 
-		$html  = $this->capture->get_html();
-		$count = $this->capture->get_count();
+		$html = $this->capture->get_html();
+		$this->capture->mark_delivered();
 
-		echo '<div id="tapio-clean-notices-source" class="tapio-clean-notices-source" hidden data-count="' . esc_attr( (string) $count ) . '" data-empty="' . esc_attr__( 'No notifications', 'tapio-clean-backend' ) . '">';
+		echo '<div id="tapio-clean-notices-source" class="tapio-clean-notices-source" hidden data-empty="' . esc_attr__( 'No notifications', 'tapio-clean-backend' ) . '">';
 		if ( '' !== $html ) {
 			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Admin notice HTML from plugins/core, previously printed on admin screens.
 			echo $html;

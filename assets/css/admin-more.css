@@ -1,5 +1,5 @@
 /**
- * More toggle for Tapio clean backend.
+ * More toggle for Tapio Clean Backend.
  */
 
 :root {
@@ -7,8 +7,8 @@
 	--tapio-more-ease: ease;
 }
 
-/* Collapsed: animate height + fade (no display:none — that cannot transition). */
-#adminmenu > li.tapio-more-item {
+/* Only collapse after JS confirms the More toggle is in place. */
+#adminmenu.tapio-more-enhanced > li.tapio-more-item {
 	max-height: 0;
 	height: 0;
 	opacity: 0;
@@ -20,23 +20,23 @@
 	visibility: hidden;
 }
 
-#adminmenu:not(.tapio-more-is-open) > li.tapio-more-item {
+#adminmenu.tapio-more-enhanced:not(.tapio-more-is-open) > li.tapio-more-item {
 	overflow: hidden;
 	min-height: 0 !important;
 }
 
-#adminmenu:not(.tapio-more-is-open) > li.tapio-more-item .wp-submenu {
+#adminmenu.tapio-more-enhanced:not(.tapio-more-is-open) > li.tapio-more-item .wp-submenu {
 	display: none !important;
 }
 
-#adminmenu.tapio-more-ready > li.tapio-more-item {
+#adminmenu.tapio-more-enhanced.tapio-more-ready > li.tapio-more-item {
 	transition:
 		max-height var(--tapio-more-duration) var(--tapio-more-ease),
 		opacity var(--tapio-more-duration) var(--tapio-more-ease),
 		visibility 0s linear var(--tapio-more-duration);
 }
 
-#adminmenu.tapio-more-is-open > li.tapio-more-item {
+#adminmenu.tapio-more-enhanced.tapio-more-is-open > li.tapio-more-item {
 	/* Large cap so open/close can animate; must exceed inline submenus (wp-has-current-submenu). */
 	max-height: 2000px;
 	height: auto;
@@ -51,18 +51,18 @@
 		visibility 0s;
 }
 
-#adminmenu.tapio-more-is-open > li.tapio-more-item.wp-has-current-submenu,
-#adminmenu.tapio-more-is-open > li.tapio-more-item.wp-menu-open {
+#adminmenu.tapio-more-enhanced.tapio-more-is-open > li.tapio-more-item.wp-has-current-submenu,
+#adminmenu.tapio-more-enhanced.tapio-more-is-open > li.tapio-more-item.wp-menu-open {
 	max-height: none;
 }
 
-#adminmenu.tapio-more-is-open li.tapio-more-item.opensub,
-#adminmenu.tapio-more-is-open li.tapio-more-item.menu-top:hover,
-#adminmenu.tapio-more-is-open li.tapio-more-item:focus-within {
+#adminmenu.tapio-more-enhanced.tapio-more-is-open li.tapio-more-item.opensub,
+#adminmenu.tapio-more-enhanced.tapio-more-is-open li.tapio-more-item.menu-top:hover,
+#adminmenu.tapio-more-enhanced.tapio-more-is-open li.tapio-more-item:focus-within {
 	z-index: 10000;
 }
 
-/* Keep "Piilota valikko" at the bottom when the visible menu is short. */
+/* Keep "Collapse menu" at the bottom when the visible menu is short. */
 @media screen and (min-width: 783px) {
 	body:not(.folded) #adminmenuwrap {
 		display: flex;
@@ -85,20 +85,14 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-	#adminmenu.tapio-more-ready > li.tapio-more-item {
+	#adminmenu.tapio-more-enhanced.tapio-more-ready > li.tapio-more-item {
 		transition: none;
 	}
 }
 
 /* More toggle stays visible. */
-#adminmenu:not(.tapio-more-is-open) > li.tapio-more-toggle-item {
+#adminmenu.tapio-more-enhanced:not(.tapio-more-is-open) > li.tapio-more-toggle-item {
 	display: list-item !important;
-}
-
-#adminmenu > #toplevel_page_tapio-clean-more,
-#adminmenu > li.tapio-more-hub-item,
-#tapio-more-accordion {
-	display: none !important;
 }
 
 #adminmenu .tapio-more-toggle-item {
