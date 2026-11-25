@@ -1,61 +1,106 @@
 /**
- * Tools > Tapio Clean Backend: sortable plugin menu list.
+ * Tools > Tapio Clean Backend: the sidebar editor.
  */
 
-.tapio-clean-backend-menus {
-	max-width: 560px;
-	margin: 8px 0;
+.tcb-editor {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 24px;
+	max-width: 900px;
+	margin-top: 12px;
 }
 
-.tapio-clean-backend-menus .tapio-clean-backend-menu {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	margin: 0 0 4px;
-	padding: 6px 10px 6px 6px;
-	background: #fff;
-	border: 1px solid #dcdcde;
+.tcb-column {
+	flex: 1 1 320px;
+	min-width: 0;
+	padding: 12px;
+	background: #f6f7f7;
+	border: 1px solid #c3c4c7;
 	border-radius: 4px;
 }
 
-.tapio-clean-backend-menus .tapio-clean-backend-menu label {
+.tcb-column h3 {
+	margin: 0;
+	font-size: 14px;
+}
+
+.tcb-column-help {
+	margin: 4px 0 10px;
+	color: #646970;
+}
+
+.tcb-list {
+	min-height: 80px;
+	margin: 0;
+}
+
+/* An empty list stays a drop target. */
+.tcb-list[data-empty]:not(:has(> li))::before {
+	content: attr(data-empty);
+	display: block;
+	padding: 24px 12px;
+	border: 1px dashed #a7aaad;
+	border-radius: 4px;
+	color: #646970;
+	text-align: center;
+}
+
+.tcb-item {
 	display: flex;
-	flex: 1;
 	align-items: center;
-	gap: 6px;
-	margin: 0;
+	gap: 8px;
+	min-height: 38px;
+	margin: 0 0 4px;
+	padding: 2px 8px 2px 4px;
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	cursor: move;
 }
 
-.tapio-clean-backend-menus .tapio-clean-backend-menu input[type="checkbox"] {
-	margin: 0;
+.tcb-item.ui-sortable-helper {
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
 }
 
-.tapio-clean-backend-handle {
+.tcb-placeholder {
+	visibility: visible !important;
+	min-height: 38px;
+	margin: 0 0 4px;
+	border: 1px dashed #2271b1;
+	border-radius: 4px;
+	background: #f0f6fc;
+}
+
+.tcb-handle {
 	display: inline-flex;
+	flex: none;
 	align-items: center;
 	justify-content: center;
-	width: 28px;
-	height: 28px;
+	width: 30px;
+	height: 30px;
 	padding: 0;
 	border: 0;
 	border-radius: 3px;
 	background: none;
-	color: #646970;
+	color: #8c8f94;
 	cursor: move;
+	/* Dragging the handle on a touch screen must not scroll the page. */
+	touch-action: none;
 }
 
-.tapio-clean-backend-handle:hover {
+.tcb-handle:hover,
+.tcb-handle:focus-visible {
 	color: #1d2327;
 }
 
-.tapio-clean-backend-handle:focus {
-	color: #1d2327;
+.tcb-handle:focus-visible,
+.tcb-name:focus-visible {
 	outline: 2px solid #2271b1;
 	outline-offset: 1px;
-	box-shadow: none;
 }
 
-.tapio-clean-backend-menu-icon {
+.tcb-icon {
+	flex: none;
 	width: 20px;
 	height: 20px;
 	font-size: 20px;
@@ -63,14 +108,53 @@
 	object-fit: contain;
 }
 
-.tapio-clean-backend-menus .ui-sortable-helper {
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+/* The name looks like text and turns into a field when clicked. */
+.tcb-name {
+	margin: 0;
+	padding: 3px 6px;
+	border: 1px solid transparent;
+	border-radius: 3px;
+	background: none;
+	color: #1d2327;
+	font: inherit;
+	text-align: left;
+	cursor: text;
+	overflow-wrap: anywhere;
 }
 
-.tapio-clean-backend-placeholder {
-	visibility: visible !important;
-	margin: 0 0 4px;
-	border: 1px dashed #2271b1;
-	border-radius: 4px;
-	background: #f0f6fc;
+.tcb-name:hover {
+	border-color: #c3c4c7;
+	background: #f6f7f7;
+}
+
+.tcb-more-name {
+	font-weight: 600;
+}
+
+.tcb-input {
+	flex: 1 1 140px;
+	min-width: 0;
+	max-width: 100%;
+}
+
+.tcb-original {
+	margin-left: auto;
+	color: #787c82;
+	font-size: 12px;
+	text-align: right;
+}
+
+.tcb-separator {
+	min-height: 26px;
+	background: transparent;
+	border-style: dashed;
+}
+
+.tcb-separator-label {
+	color: #787c82;
+	font-size: 12px;
+}
+
+.button-link.tcb-reset {
+	color: #b32d2e;
 }

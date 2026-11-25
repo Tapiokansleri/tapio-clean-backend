@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Tapio Clean Backend 1.0.0\n"
+"Project-Id-Version: Tapio Clean Backend 1.2.0\n"
 "Language: fi\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -8,54 +8,101 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Domain: tapio-clean-backend\n"
 
-#: includes/class-more-menu.php:59
-msgid "More"
-msgstr "Lisää"
-
-#: includes/class-admin-bar-notifications.php:76
-#: includes/class-admin-bar-notifications.php:80
-#: includes/class-settings.php:176
-msgid "Notifications"
-msgstr "Ilmoitukset"
-
-#: includes/class-admin-bar-notifications.php:91
-#: includes/class-admin-bar-notifications.php:137
-msgid "No notifications"
-msgstr "Ei ilmoituksia"
-
-#: includes/class-settings.php:120
-msgid "Settings"
-msgstr "Asetukset"
-
-#: includes/class-settings.php:134
-#: includes/class-settings.php:135
 msgid "Tapio Clean Backend"
 msgstr "Tapio Clean Backend"
 
-#: includes/class-settings.php:161
+msgid "Arrange and rename the admin sidebar, keep less used menus under a More link, and read admin notices in an admin bar Notifications panel."
+msgstr "Järjestä ja nimeä ylläpidon sivupalkki, kerää harvemmin käytetyt valikot Lisää-linkin alle ja lue ylläpidon ilmoitukset yläpalkin Ilmoitukset-paneelista."
+
+msgid "Notifications"
+msgstr "Ilmoitukset"
+
+msgid "No notifications"
+msgstr "Ei ilmoituksia"
+
+msgid "More"
+msgstr "Lisää"
+
+msgid "Menu name"
+msgstr "Valikon nimi"
+
+#. translators: %s: menu name
+msgid "Move %s"
+msgstr "Siirrä: %s"
+
+msgid "Sidebar"
+msgstr "Sivupalkki"
+
+#. translators: 1: menu name, 2: list name, 3: position, 4: number of menus in the list
+msgid "%1$s is now in %2$s, position %3$d of %4$d."
+msgstr "%1$s on nyt listassa %2$s kohdassa %3$d / %4$d."
+
+#. translators: %s: new menu name
+msgid "Name is now %s. Save changes to keep it."
+msgstr "Nimi on nyt %s. Säilytä se tallentamalla muutokset."
+
+msgid "Click again to restore the default menu and names"
+msgstr "Palauta oletusvalikko ja nimet klikkaamalla uudelleen"
+
+msgid "Settings"
+msgstr "Asetukset"
+
 msgid "Features"
 msgstr "Toiminnot"
 
-#: includes/class-settings.php:168
 msgid "Sidebar More"
 msgstr "Sivupalkin Lisää"
 
-#: includes/class-settings.php:206
+msgid "Sidebar menu"
+msgstr "Sivupalkin valikko"
+
 msgid "Nothing is removed. These switches only choose which rearrangements are active."
 msgstr "Mitään ei poisteta. Näillä kytkimillä valitset vain, mitkä uudelleenjärjestelyt ovat käytössä."
 
-#: includes/class-settings.php:226
-msgid "Collapse plugin and custom post type menus under More"
-msgstr "Tiivistä lisäosien ja mukautettujen sisältötyyppien valikot Lisää-osion alle"
+msgid "Show a More link in the sidebar"
+msgstr "Näytä Lisää-linkki sivupalkissa"
 
-#: includes/class-settings.php:229
-msgid "Core menus stay in the sidebar. Plugin menus remain available inside the More section."
-msgstr "WordPressin ydinvalikot pysyvät sivupalkissa. Lisäosien valikot ovat edelleen käytettävissä Lisää-osiossa."
+msgid "The menus you place under More open when you click it. When this is off, they follow the main menus."
+msgstr "Lisää-linkin alle sijoittamasi valikot avautuvat, kun klikkaat sitä. Kun tämä on pois päältä, ne näkyvät päävalikoiden jälkeen."
 
-#: includes/class-settings.php:251
 msgid "Move admin notices into the Notifications panel in the admin bar"
-msgstr "Siirrä ylläpidon ilmoitukset ilmoituspalkin Ilmoitukset-paneeliin"
+msgstr "Siirrä ylläpidon ilmoitukset yläpalkin Ilmoitukset-paneeliin"
 
-#: includes/class-settings.php:254
 msgid "Notices are not discarded. They appear in the admin bar with a badge count."
-msgstr "Ilmoituksia ei hävitetä. Ne näkyvät ilmoituspalkissa merkin kanssa."
+msgstr "Ilmoituksia ei hävitetä. Ne näkyvät yläpalkissa, ja niiden määrä näkyy laskurissa."
+
+msgid "The sidebar could not be read on this screen."
+msgstr "Sivupalkkia ei voitu lukea tällä sivulla."
+
+msgid "Drag menus to change their order or to move them between the sidebar and More. Click a name to rename it; leave the name empty to get the original back. Changes apply to every user when you save."
+msgstr "Raahaa valikoita, kun haluat muuttaa niiden järjestystä tai siirtää niitä sivupalkin ja Lisää-valikon välillä. Nimeä valikko uudelleen klikkaamalla sen nimeä. Tyhjä nimi palauttaa alkuperäisen. Tallennetut muutokset koskevat kaikkia käyttäjiä."
+
+msgid "The More link is off. The menus in the More list follow the main ones once you have moved a menu and saved; until then the sidebar keeps the WordPress order."
+msgstr "Lisää-linkki on pois päältä. Kun olet siirtänyt valikkoa ja tallentanut, Lisää-listan valikot näkyvät päävalikoiden jälkeen. Siihen asti sivupalkki pitää WordPressin järjestyksen."
+
+msgid "Always visible."
+msgstr "Aina näkyvissä."
+
+msgid "Click to rename"
+msgstr "Nimeä uudelleen klikkaamalla"
+
+msgid "Shown when the More link is open. Click the title to rename the link."
+msgstr "Näkyvät, kun Lisää-linkki on auki. Nimeä linkki uudelleen klikkaamalla otsikkoa."
+
+msgid "Drag menus here."
+msgstr "Raahaa valikoita tähän."
+
+msgid "Keyboard: focus a drag handle and use the up and down arrow keys to move a menu, and the right and left arrow keys to move it to More and back."
+msgstr "Näppäimistöllä: valitse raahauskahva. Ylös- ja alas-nuolet siirtävät valikkoa listassa, oikea nuoli siirtää sen Lisää-listaan ja vasen takaisin."
+
+msgid "Restore default menu"
+msgstr "Palauta oletusvalikko"
+
+msgid "The sidebar editor needs JavaScript. Saving without it keeps the current menu."
+msgstr "Sivupalkin muokkaus vaatii JavaScriptin. Ilman sitä tallennus säilyttää nykyisen valikon."
+
+msgid "Separator"
+msgstr "Erotin"
+
+msgid "Settings saved."
+msgstr "Asetukset tallennettu."

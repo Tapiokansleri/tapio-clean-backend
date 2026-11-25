@@ -134,7 +134,8 @@ class Admin_Bar_Notifications {
 		$html = $this->capture->get_html();
 		$this->capture->mark_delivered();
 
-		echo '<div id="tapio-clean-notices-source" class="tapio-clean-notices-source" hidden data-empty="' . esc_attr__( 'No notifications', 'tapio-clean-backend' ) . '">';
+		// Hidden by CSS only when JavaScript runs, so the notices are never lost without it.
+		echo '<div id="tapio-clean-notices-source" class="tapio-clean-notices-source" data-empty="' . esc_attr__( 'No notifications', 'tapio-clean-backend' ) . '">';
 		if ( '' !== $html ) {
 			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Admin notice HTML from plugins/core, previously printed on admin screens.
 			echo $html;

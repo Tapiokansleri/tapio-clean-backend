@@ -1,303 +1,181 @@
 /**
- * Relocates admin notices into the admin bar Notifications panel.
+ * Moves admin notices into the admin bar Notifications panel.
  *
- * Runs after wp-admin common.js (which moves .notice nodes after the page
- * heading). Re-entry must not wipe notices already placed in the panel.
+ * Notices are moved, never copied or deleted, so their own buttons and scripts
+ * keep working. Hidden notices (such as the editor's "Connection lost" warning)
+ * and notices marked "inline" stay where their screen put them, and so does
+ * anything else a plugin printed with its notices. Notices that appear after the
+ * page has loaded, such as the result of an action, also stay in place.
  */
-(function ($) {
+( function ( $ ) {
 	'use strict';
 
-	var CONTENT_SELECTORS = [
-		'#wpbody-content > .notice',
-		'#wpbody-content > .update-nag',
-		'#wpbody-content > .updated',
-		'#wpbody-content > .error',
-		'#wpbody-content > .e-notice',
-		'#wpbody-content > .wrap > .notice',
-		'#wpbody-content > .wrap > .update-nag',
-		'#wpbody-content > .wrap > .updated',
-		'#wpbody-content > .wrap > .error',
-		'#wpbody-content > .wrap > .e-notice'
-	].join(',');
+	var NOTICE = '.notice, .update-nag, .updated, .error, .e-notice';
+	var CONTENT_SELECTORS = [ '#wpbody-content > ', '#wpbody-content > .wrap > ' ]
+		.map( function ( parent ) {
+			return NOTICE.split( ', ' )
+				.map( function ( notice ) {
+					return parent + notice;
+				} )
+				.join( ', ' );
+		} )
+		.join( ', ' );
 
+	var panel = null;
 	var emptyLabel = 'No notifications';
-	var didInitial = false;
-	var failed = false;
 
-	function classTokens(el) {
-		return String(el.className || '')
-			.split(/\s+/)
-			.map(function (c) {
-				return c.trim();
-			})
-			.filter(Boolean);
+	function all( selector, root ) {
+		return Array.prototype.slice.call( ( root || document ).querySelectorAll( selector ) );
 	}
 
-	function hasToken(el, token) {
-		return classTokens(el).indexOf(token) !== -1;
+	function isHidden( el ) {
+		return el.hidden || el.classList.contains( 'hidden' ) || 'none' === el.style.display;
 	}
 
-	function collectNodes(selector) {
-		return Array.prototype.slice.call(document.querySelectorAll(selector));
+	// A notice worth moving: visible by itself, not meant to stay in place, with something to read.
+	function isMovable( el ) {
+		if ( ! el.matches( NOTICE ) || isHidden( el ) || el.classList.contains( 'inline' ) ) {
+			return false;
+		}
+		if ( el.closest( '#wpadminbar, #screen-meta, #screen-meta-links, .wp-editor-container, .block-editor, .interface-interface-skeleton' ) ) {
+			return false;
+		}
+
+		var text = ( el.textContent || '' ).replace( /\s+/g, ' ' ).trim();
+
+		return text.length > 1 && ! /^switch to the (list|grid) view$/i.test( text );
 	}
 
-	function fingerprint(el) {
-		var text = (el.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 200);
-		return classTokens(el).sort().join('.') + '|' + text;
-	}
-
-	function revealNoticesInPlace() {
-		document.body.classList.remove('tapio-clean-hide-notices');
-
-		var source = document.getElementById('tapio-clean-notices-source');
-		var target = document.getElementById('wpbody-content');
-		if (source && target && source.children.length) {
-			var wrap = target.querySelector('.wrap');
-			var anchor = wrap || target;
-			while (source.firstChild) {
-				anchor.insertBefore(source.firstChild, anchor.firstChild);
+	function outermostNotice( el, root ) {
+		var parent = el.parentElement;
+		while ( parent && parent !== root ) {
+			if ( parent.matches( NOTICE ) ) {
+				return false;
 			}
+			parent = parent.parentElement;
 		}
-		removeSource();
-	}
-
-	function isNoticeLike(el) {
-		if (!el || el.nodeType !== 1 || el.tagName === 'SCRIPT' || el.tagName === 'STYLE') {
-			return false;
-		}
-		if (el.closest('#wpadminbar, #tapio-clean-notices-panel, #tapio-clean-notices-source, #screen-meta, #screen-meta-links')) {
-			return false;
-		}
-		if (el.closest('.wp-editor-container, .block-editor, .interface-interface-skeleton')) {
-			return false;
-		}
-
-		return (
-			hasToken(el, 'notice') ||
-			hasToken(el, 'update-nag') ||
-			hasToken(el, 'updated') ||
-			hasToken(el, 'error') ||
-			hasToken(el, 'e-notice')
-		);
-	}
-
-	function usableNotice(el) {
-		if (!isNoticeLike(el)) {
-			return false;
-		}
-
-		var text = (el.textContent || '').replace(/\s+/g, ' ').trim();
-		if (text.length < 2) {
-			return false;
-		}
-
-		// Skip chrome / view-switcher leftovers that are not real admin notices.
-		if (/^switch to the (list|grid) view$/i.test(text)) {
-			return false;
-		}
-
 		return true;
 	}
 
-	function prepareNotice(el) {
-		// Prevent wp-admin common.js from yanking the node back under the heading.
-		el.classList.add('inline');
-		el.classList.add('tapio-clean-notice-card');
-		el.style.cssText = '';
-		el.removeAttribute('hidden');
-
-		// Flatten accidental nested notice wrappers.
-		Array.prototype.slice.call(el.querySelectorAll('.notice, .update-nag, .updated, .error, .e-notice')).forEach(function (nested) {
-			if (nested === el) {
-				return;
-			}
-			while (nested.firstChild) {
-				el.insertBefore(nested.firstChild, nested);
-			}
-			if (nested.parentNode) {
-				nested.parentNode.removeChild(nested);
-			}
-		});
+	function visibleCards() {
+		return all( ':scope > .tapio-clean-notice-card', panel ).filter( function ( card ) {
+			return ! isHidden( card );
+		} );
 	}
 
-	function gatherNewNotices() {
-		var nodes = [];
-		var seen = {};
+	// Badge and empty text follow what is in the panel, also after a notice dismisses itself.
+	function refresh() {
+		var count = visibleCards().length;
+		var empty = panel.querySelector( ':scope > .tapio-clean-notices-empty' );
+		var badge = document.querySelector( '#wp-admin-bar-tapio-clean-notifications .tapio-clean-notice-badge' );
 
-		function pushUnique(el) {
-			if (!usableNotice(el)) {
-				if (el && el.parentNode && !el.closest('#wpadminbar') && isNoticeLike(el) && !usableNotice(el)) {
-					el.parentNode.removeChild(el);
-				}
-				return;
-			}
-			var key = fingerprint(el);
-			if (seen[key]) {
-				if (el.parentNode && !el.closest('#wpadminbar')) {
-					el.parentNode.removeChild(el);
-				}
-				return;
-			}
-			seen[key] = true;
-			nodes.push(el);
+		if ( ! count && ! empty ) {
+			empty = document.createElement( 'p' );
+			empty.className = 'tapio-clean-notices-empty';
+			empty.textContent = emptyLabel;
+			panel.appendChild( empty );
+		} else if ( count && empty ) {
+			empty.remove();
 		}
 
-		var source = document.getElementById('tapio-clean-notices-source');
-		if (source) {
-			var label = source.getAttribute('data-empty');
-			if (label) {
-				emptyLabel = label;
-			}
-			Array.prototype.slice.call(source.children).forEach(pushUnique);
-			// Captured HTML sometimes wraps notices; pull notice roots from deeper.
-			if (!nodes.length) {
-				collectNodes('#tapio-clean-notices-source .notice, #tapio-clean-notices-source .update-nag, #tapio-clean-notices-source .updated, #tapio-clean-notices-source .error, #tapio-clean-notices-source .e-notice').forEach(function (el) {
-					if (!el.parentElement || !isNoticeLike(el.parentElement)) {
-						pushUnique(el);
-					}
-				});
-			}
+		if ( badge ) {
+			badge.hidden = ! count;
+			badge.textContent = count ? String( count ) : '';
 		}
-
-		collectNodes(CONTENT_SELECTORS).forEach(pushUnique);
-
-		return nodes;
 	}
 
-	function updateBadge(count) {
-		var badge = document.querySelector('#wp-admin-bar-tapio-clean-notifications .tapio-clean-notice-badge');
-		if (!badge) {
+	function move( el ) {
+		// "inline" stops wp-admin/js/common.js from moving the notice back under the heading.
+		el.classList.add( 'inline', 'tapio-clean-notice-card' );
+		panel.appendChild( el );
+	}
+
+	// Takes the captured notices and puts everything else back where WordPress would have printed it.
+	function unpackSource() {
+		var source = document.getElementById( 'tapio-clean-notices-source' );
+		if ( ! source ) {
 			return;
 		}
-		if (count > 0) {
-			badge.hidden = false;
-			badge.textContent = String(count);
-		} else {
-			badge.hidden = true;
-			badge.textContent = '';
-		}
+
+		emptyLabel = source.getAttribute( 'data-empty' ) || emptyLabel;
+
+		all( NOTICE, source )
+			.filter( function ( el ) {
+				return outermostNotice( el, source ) && isMovable( el );
+			} )
+			.forEach( move );
+
+		restore( source );
 	}
 
-	function panelNoticeCount(panel) {
-		return panel.querySelectorAll(':scope > .tapio-clean-notice-card').length;
-	}
+	function restore( source ) {
+		var content = document.getElementById( 'wpbody-content' );
 
-	function renderEmpty(panel) {
-		panel.innerHTML = '';
-		var empty = document.createElement('p');
-		empty.className = 'tapio-clean-notices-empty';
-		empty.textContent = emptyLabel;
-		panel.appendChild(empty);
-	}
-
-	function appendNotices(panel, notices) {
-		if (!notices.length) {
-			return 0;
+		if ( content ) {
+			var before = content.querySelector( ':scope > .wrap' );
+			while ( source.firstChild ) {
+				content.insertBefore( source.firstChild, before );
+			}
 		}
 
-		var empty = panel.querySelector('.tapio-clean-notices-empty');
-		if (empty) {
-			empty.parentNode.removeChild(empty);
-		}
-
-		notices.forEach(function (el) {
-			prepareNotice(el);
-			panel.appendChild(el);
-		});
-
-		return notices.length;
+		source.remove();
 	}
 
-	/**
-	 * Remove dismissed cards instantly — core fadeTo/slideUp looks awful in this tray.
-	 */
-	function bindInstantDismiss(panel) {
-		if (panel.getAttribute('data-tapio-dismiss-bound') === '1') {
-			return;
-		}
-		panel.setAttribute('data-tapio-dismiss-bound', '1');
-
-		panel.addEventListener(
-			'click',
-			function (event) {
-				var dismiss = event.target.closest('.notice-dismiss, .e-notice__dismiss');
-				if (!dismiss || !panel.contains(dismiss)) {
-					return;
-				}
-
-				var card = dismiss.closest('.tapio-clean-notice-card');
-				if (!card || !panel.contains(card)) {
-					return;
-				}
-
-				event.preventDefault();
-				event.stopImmediatePropagation();
-				card.remove();
-
-				if (!panelNoticeCount(panel)) {
-					renderEmpty(panel);
-				}
-				updateBadge(panelNoticeCount(panel));
-			},
-			true
-		);
+	function moveFromContent() {
+		all( CONTENT_SELECTORS ).filter( isMovable ).forEach( move );
 	}
 
-	function removeSource() {
-		var source = document.getElementById('tapio-clean-notices-source');
-		if (source && source.parentNode) {
-			source.parentNode.removeChild(source);
-		}
+	// From here on, notices show where they are printed.
+	function stopHiding() {
+		document.body.classList.remove( 'tapio-clean-hide-notices' );
 	}
 
-	function init(isLatePass) {
-		if (failed) {
+	// Whether the user can actually open the panel: the toolbar and its item must be shown.
+	function panelReachable() {
+		var item = document.getElementById( 'wp-admin-bar-tapio-clean-notifications' );
+		var bar = document.getElementById( 'wpadminbar' );
+
+		return !! ( panel && item && bar &&
+			'none' !== window.getComputedStyle( item ).display &&
+			'none' !== window.getComputedStyle( bar ).display );
+	}
+
+	function init() {
+		panel = document.getElementById( 'tapio-clean-notices-panel' );
+
+		if ( ! panelReachable() ) {
+			// No panel to move to: show the captured notices on the page.
+			var source = document.getElementById( 'tapio-clean-notices-source' );
+			if ( source ) {
+				restore( source );
+			}
+			stopHiding();
 			return;
 		}
 
 		try {
-			var panel = document.getElementById('tapio-clean-notices-panel');
-			if (!panel) {
-				revealNoticesInPlace();
-				failed = true;
-				return;
-			}
-
-			bindInstantDismiss(panel);
-
-			var notices = gatherNewNotices();
-
-			if (!didInitial) {
-				didInitial = true;
-				if (notices.length) {
-					panel.innerHTML = '';
-					appendNotices(panel, notices);
-				} else {
-					renderEmpty(panel);
-				}
-				removeSource();
-			} else if (notices.length) {
-				appendNotices(panel, notices);
-			} else if (!isLatePass && !panelNoticeCount(panel)) {
-				renderEmpty(panel);
-			}
-
-			updateBadge(panelNoticeCount(panel));
-		} catch (e) {
-			failed = true;
-			revealNoticesInPlace();
+			unpackSource();
+			moveFromContent();
+			refresh();
+			new window.MutationObserver( refresh ).observe( panel, {
+				childList: true,
+				subtree: true,
+				attributes: true,
+				attributeFilter: [ 'class', 'style', 'hidden' ]
+			} );
+		} finally {
+			stopHiding();
 		}
+
+		// Notices that scripts add while the page is still loading.
+		$( window ).on( 'load', function () {
+			window.setTimeout( function () {
+				moveFromContent();
+				refresh();
+			}, 300 );
+		} );
 	}
 
-	function boot() {
-		init(false);
-		window.setTimeout(function () {
-			init(true);
-		}, 300);
-		window.setTimeout(function () {
-			init(true);
-		}, 1200);
-	}
-
-	$(boot);
-})(jQuery);
+	// "common" is a dependency, so its own ready handler (notice buttons and placement) runs first.
+	$( init );
+}( window.jQuery ) );

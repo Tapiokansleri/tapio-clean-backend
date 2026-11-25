@@ -1,6 +1,6 @@
 <?php
 /**
- * Tools settings page and stored feature toggles.
+ * Tools settings page: feature switches and the sidebar editor.
  *
  * @package Tapio\CleanBackend
  */
@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Registers Tools > Tapio Clean Backend and reads the saved switches.
+ * Registers Tools > Tapio Clean Backend and reads the saved settings.
  */
 class Settings {
 
@@ -38,6 +38,13 @@ class Settings {
 	const GROUP = 'tapio_clean_backend';
 
 	/**
+	 * Sidebar order and names, for the editor.
+	 *
+	 * @var Admin_Menu
+	 */
+	private $admin_menu;
+
+	/**
 	 * Hook suffix of the settings page, set when the page is added.
 	 *
 	 * @var string
@@ -45,109 +52,48 @@ class Settings {
 	private $hook_suffix = '';
 
 	/**
-	 * Default feature switches (both on), no menus kept out of More and no custom order.
+	 * Constructor.
 	 *
-	 * @return array{collapse_sidebar: bool, relocate_notices: bool, keep_visible: string[], menu_order: string[]}
+	 * @param Admin_Menu $admin_menu Sidebar service.
+	 */
+	public function __construct( Admin_Menu $admin_menu ) {
+		$this->admin_menu = $admin_menu;
+	}
+
+	/**
+	 * Default settings: both features on and no saved sidebar layout.
+	 *
+	 * keep_visible and menu_order are what versions 1.1.x stored. They still
+	 * shape the sidebar until a layout is saved in the editor.
+	 *
+	 * @return array
 	 */
 	public static function defaults() {
 		return array(
 			'collapse_sidebar' => true,
 			'relocate_notices' => true,
+			'menu'             => Menu_Layout::empty_layout(),
 			'keep_visible'     => array(),
 			'menu_order'       => array(),
 		);
 	}
 
 	/**
-	 * Returns merged settings.
+	 * Saved settings with defaults filled in and values cleaned.
 	 *
-	 * @return array{collapse_sidebar: bool, relocate_notices: bool, keep_visible: string[], menu_order: string[]}
+	 * @return array{collapse_sidebar: bool, relocate_notices: bool, menu: array, keep_visible: string[], menu_order: string[]}
 	 */
 	public static function get() {
-		$saved = get_option( self::OPTION, array() );
-		if ( ! is_array( $saved ) ) {
-			$saved = array();
-		}
-
-		$settings = wp_parse_args( $saved, self::defaults() );
+		$saved    = get_option( self::OPTION, array() );
+		$settings = wp_parse_args( is_array( $saved ) ? $saved : array(), self::defaults() );
 
 		return array(
 			'collapse_sidebar' => ! empty( $settings['collapse_sidebar'] ),
 			'relocate_notices' => ! empty( $settings['relocate_notices'] ),
-			'keep_visible'     => self::clean_slugs( $settings['keep_visible'] ),
-			'menu_order'       => self::clean_slugs( $settings['menu_order'] ),
+			'menu'             => Menu_Layout::clean( $settings['menu'] ),
+			'keep_visible'     => Menu_Layout::clean_slugs( $settings['keep_visible'] ),
+			'menu_order'       => Menu_Layout::clean_slugs( $settings['menu_order'] ),
 		);
-	}
-
-	/**
-	 * Menu slugs the user keeps in the main sidebar instead of More.
-	 *
-	 * @return string[]
-	 */
-	public static function get_kept_slugs() {
-		$settings = self::get();
-		return $settings['keep_visible'];
-	}
-
-	/**
-	 * Plugin and custom post type menu slugs in the order the user dragged them.
-	 *
-	 * @return string[]
-	 */
-	public static function get_menu_order() {
-		$settings = self::get();
-		return $settings['menu_order'];
-	}
-
-	/**
-	 * Keeps plausible menu slugs from a stored or posted list.
-	 *
-	 * Menu slugs are file names or admin URLs such as admin.php?page=x, so
-	 * anything with markup, quotes or whitespace is dropped.
-	 *
-	 * @param mixed $slugs Raw list.
-	 * @return string[]
-	 */
-	private static function clean_slugs( $slugs ) {
-		if ( ! is_array( $slugs ) ) {
-			return array();
-		}
-
-		$clean = array();
-		foreach ( $slugs as $slug ) {
-			if ( ! is_string( $slug ) ) {
-				continue;
-			}
-
-			$slug = trim( $slug );
-			if ( '' === $slug || strlen( $slug ) > 200 || preg_match( '/[<>"\'\s]/', $slug ) ) {
-				continue;
-			}
-
-			$clean[] = $slug;
-		}
-
-		return array_values( array_unique( $clean ) );
-	}
-
-	/**
-	 * Whether the More sidebar accordion is enabled.
-	 *
-	 * @return bool
-	 */
-	public static function is_sidebar_enabled() {
-		$settings = self::get();
-		return $settings['collapse_sidebar'];
-	}
-
-	/**
-	 * Whether notice relocation is enabled.
-	 *
-	 * @return bool
-	 */
-	public static function is_notices_enabled() {
-		$settings = self::get();
-		return $settings['relocate_notices'];
 	}
 
 	/**
@@ -163,7 +109,7 @@ class Settings {
 	}
 
 	/**
-	 * Loads the sortable list script and styles on the settings page only.
+	 * Loads the editor script and styles on the settings page only.
 	 *
 	 * @param string $hook_suffix Current admin page.
 	 * @return void
@@ -183,7 +129,7 @@ class Settings {
 		wp_enqueue_script(
 			'tapio-clean-backend-settings',
 			TAPIO_CLEAN_BACKEND_URL . 'assets/js/admin-settings.js',
-			array( 'jquery', 'jquery-ui-sortable' ),
+			array( 'jquery', 'jquery-ui-sortable', 'jquery-touch-punch' ),
 			TAPIO_CLEAN_BACKEND_VERSION,
 			true
 		);
@@ -192,9 +138,17 @@ class Settings {
 			'tapio-clean-backend-settings',
 			'tapioCleanBackendSettings',
 			array(
-				/* translators: 1: menu name, 2: new position, 3: number of menus */
-				'moved' => __( '%1$s is now at position %2$d of %3$d.', 'tapio-clean-backend' ),
-				'reset' => __( 'Default order restored. Save changes to keep it.', 'tapio-clean-backend' ),
+				'maxNameLength' => Menu_Layout::MAX_NAME_LENGTH,
+				'nameField'     => __( 'Menu name', 'tapio-clean-backend' ),
+				/* translators: %s: menu name */
+				'moveLabel'     => __( 'Move %s', 'tapio-clean-backend' ),
+				'sidebar'       => __( 'Sidebar', 'tapio-clean-backend' ),
+				'more'          => __( 'More', 'tapio-clean-backend' ),
+				/* translators: 1: menu name, 2: list name, 3: position, 4: number of menus in the list */
+				'moved'         => __( '%1$s is now in %2$s, position %3$d of %4$d.', 'tapio-clean-backend' ),
+				/* translators: %s: new menu name */
+				'renamed'       => __( 'Name is now %s. Save changes to keep it.', 'tapio-clean-backend' ),
+				'confirmReset'  => __( 'Click again to restore the default menu and names', 'tapio-clean-backend' ),
 			)
 		);
 	}
@@ -210,13 +164,11 @@ class Settings {
 			return $links;
 		}
 
-		$url = admin_url( 'tools.php?page=' . self::PAGE );
-
 		array_unshift(
 			$links,
 			sprintf(
 				'<a href="%s">%s</a>',
-				esc_url( $url ),
+				esc_url( admin_url( 'tools.php?page=' . self::PAGE ) ),
 				esc_html__( 'Settings', 'tapio-clean-backend' )
 			)
 		);
@@ -240,7 +192,7 @@ class Settings {
 	}
 
 	/**
-	 * Registers the option and fields.
+	 * Registers the option, sections and fields.
 	 *
 	 * @return void
 	 */
@@ -259,7 +211,7 @@ class Settings {
 		add_settings_section(
 			'tapio_clean_backend_features',
 			__( 'Features', 'tapio-clean-backend' ),
-			array( $this, 'render_section' ),
+			array( $this, 'render_features_intro' ),
 			self::PAGE
 		);
 
@@ -272,174 +224,90 @@ class Settings {
 		);
 
 		add_settings_field(
-			'keep_visible',
-			__( 'Plugin menus', 'tapio-clean-backend' ),
-			array( $this, 'render_keep_visible_field' ),
-			self::PAGE,
-			'tapio_clean_backend_features'
-		);
-
-		add_settings_field(
 			'relocate_notices',
 			__( 'Notifications', 'tapio-clean-backend' ),
 			array( $this, 'render_relocate_notices_field' ),
 			self::PAGE,
 			'tapio_clean_backend_features'
 		);
+
+		add_settings_section(
+			'tapio_clean_backend_menu',
+			__( 'Sidebar menu', 'tapio-clean-backend' ),
+			array( $this, 'render_menu_editor' ),
+			self::PAGE
+		);
 	}
 
 	/**
-	 * Sanitizes posted settings. Unchecked boxes are treated as off.
+	 * Cleans the posted settings. Unchecked boxes are off.
+	 *
+	 * The sidebar layout arrives as JSON, and only when it was changed in the
+	 * editor; otherwise the saved layout is kept. WordPress runs this callback
+	 * twice when the option is created, so its output must also be valid input.
 	 *
 	 * @param mixed $input Raw option value.
-	 * @return array{collapse_sidebar: bool, relocate_notices: bool, keep_visible: string[], menu_order: string[]}
+	 * @return array
 	 */
 	public function sanitize( $input ) {
 		if ( ! is_array( $input ) ) {
 			$input = array();
 		}
 
+		$previous     = self::get();
+		$menu         = $previous['menu'];
+		$keep_visible = $previous['keep_visible'];
+		$menu_order   = $previous['menu_order'];
+
+		if ( ! empty( $input['reset_menu'] ) ) {
+			$menu         = Menu_Layout::empty_layout();
+			$keep_visible = array();
+			$menu_order   = array();
+		} elseif ( ! empty( $input['menu_json'] ) && is_string( $input['menu_json'] ) ) {
+			$posted = json_decode( $input['menu_json'], true );
+			if ( is_array( $posted ) && ! empty( $posted['moved'] ) ) {
+				$menu         = Menu_Layout::merge_unlisted( Menu_Layout::clean( $posted ), $previous['menu'] );
+				$keep_visible = array();
+				$menu_order   = array();
+			} elseif ( is_array( $posted ) ) {
+				// Names only: the saved order, or the default and 1.1.x choices, stay as they are.
+				$menu = Menu_Layout::rename_only( Menu_Layout::clean( $posted ), $previous['menu'] );
+			}
+		} elseif ( isset( $input['menu'] ) ) {
+			$menu         = Menu_Layout::clean( $input['menu'] );
+			$keep_visible = Menu_Layout::clean_slugs( isset( $input['keep_visible'] ) ? $input['keep_visible'] : array() );
+			$menu_order   = Menu_Layout::clean_slugs( isset( $input['menu_order'] ) ? $input['menu_order'] : array() );
+		}
+
 		return array(
 			'collapse_sidebar' => ! empty( $input['collapse_sidebar'] ),
 			'relocate_notices' => ! empty( $input['relocate_notices'] ),
-			'keep_visible'     => self::clean_slugs( isset( $input['keep_visible'] ) ? $input['keep_visible'] : array() ),
-			'menu_order'       => self::clean_slugs( isset( $input['menu_order'] ) ? $input['menu_order'] : array() ),
+			'menu'             => $menu,
+			'keep_visible'     => $keep_visible,
+			'menu_order'       => $menu_order,
 		);
 	}
 
 	/**
-	 * Section intro.
+	 * Intro of the feature switches.
 	 *
 	 * @return void
 	 */
-	public function render_section() {
+	public function render_features_intro() {
 		echo '<p>' . esc_html__( 'Nothing is removed. These switches only choose which rearrangements are active.', 'tapio-clean-backend' ) . '</p>';
 	}
 
 	/**
-	 * Sidebar checkbox.
+	 * More section checkbox.
 	 *
 	 * @return void
 	 */
 	public function render_collapse_sidebar_field() {
-		$settings = self::get();
-		$name     = self::OPTION . '[collapse_sidebar]';
-		?>
-		<label for="tapio-clean-backend-collapse-sidebar">
-			<input
-				type="checkbox"
-				id="tapio-clean-backend-collapse-sidebar"
-				name="<?php echo esc_attr( $name ); ?>"
-				value="1"
-				<?php checked( $settings['collapse_sidebar'] ); ?>
-			/>
-			<?php esc_html_e( 'Collapse plugin and custom post type menus under More', 'tapio-clean-backend' ); ?>
-		</label>
-		<p class="description">
-			<?php esc_html_e( 'Core menus stay in the sidebar. Plugin menus remain available inside the More section.', 'tapio-clean-backend' ); ?>
-		</p>
-		<?php
-	}
-
-	/**
-	 * Sortable list of plugin and custom post type menus.
-	 *
-	 * Each row has a drag handle for the order and a checkbox that keeps the
-	 * menu in the main sidebar instead of moving it under More. The hidden
-	 * menu_order inputs are posted in the order the rows are in.
-	 *
-	 * @return void
-	 */
-	public function render_keep_visible_field() {
-		$settings   = self::get();
-		$classifier = new Menu_Classifier();
-		$menus      = $classifier->get_candidate_menus();
-
-		if ( empty( $menus ) ) {
-			echo '<p>' . esc_html__( 'No plugin or custom post type menus were found.', 'tapio-clean-backend' ) . '</p>';
-			return;
-		}
-
-		// Positions in the order WordPress built, for the Restore default order button.
-		$default = Menu_Order::get_default_order();
-		$default = is_array( $default ) ? $default : array_keys( $menus );
-		$index   = 0;
-		?>
-		<p class="description" id="tapio-clean-backend-menus-help">
-			<?php esc_html_e( 'Drag the rows to change the order of these menus in the sidebar and under More. Ticked menus stay in the main sidebar. The rest go under More when Sidebar More is on.', 'tapio-clean-backend' ); ?>
-		</p>
-		<ul class="tapio-clean-backend-menus" id="tapio-clean-backend-menus" aria-describedby="tapio-clean-backend-menus-help">
-			<?php
-			foreach ( $menus as $slug => $menu_item ) {
-				$id       = 'tapio-clean-backend-keep-' . md5( $slug );
-				$position = array_search( $slug, $default, true );
-				?>
-				<li
-					class="tapio-clean-backend-menu"
-					data-title="<?php echo esc_attr( $menu_item['title'] ); ?>"
-					data-default-index="<?php echo esc_attr( (string) ( false === $position ? 1000 + $index : $position ) ); ?>"
-				>
-					<button
-						type="button"
-						class="tapio-clean-backend-handle"
-						aria-describedby="tapio-clean-backend-keyboard-help"
-						aria-label="<?php /* translators: %s: menu name */ echo esc_attr( sprintf( __( 'Move %s', 'tapio-clean-backend' ), $menu_item['title'] ) ); ?>"
-					>
-						<span class="dashicons dashicons-menu" aria-hidden="true"></span>
-					</button>
-					<input type="hidden" name="<?php echo esc_attr( self::OPTION . '[menu_order][]' ); ?>" value="<?php echo esc_attr( $slug ); ?>" />
-					<label for="<?php echo esc_attr( $id ); ?>">
-						<input
-							type="checkbox"
-							id="<?php echo esc_attr( $id ); ?>"
-							name="<?php echo esc_attr( self::OPTION . '[keep_visible][]' ); ?>"
-							value="<?php echo esc_attr( $slug ); ?>"
-							<?php checked( $classifier->is_kept_menu( $slug, $settings['keep_visible'] ) ); ?>
-						/>
-						<?php $this->render_menu_icon( $menu_item['icon'] ); ?>
-						<span class="screen-reader-text"><?php esc_html_e( 'Keep in the sidebar:', 'tapio-clean-backend' ); ?></span>
-						<?php echo esc_html( $menu_item['title'] ); ?>
-					</label>
-				</li>
-				<?php
-				++$index;
-			}
-			?>
-		</ul>
-		<p class="description" id="tapio-clean-backend-keyboard-help">
-			<?php esc_html_e( 'To move a row with the keyboard, focus its handle and press the up or down arrow key.', 'tapio-clean-backend' ); ?>
-		</p>
-		<p>
-			<button type="button" class="button-link" id="tapio-clean-backend-reset-order">
-				<?php esc_html_e( 'Restore default order', 'tapio-clean-backend' ); ?>
-			</button>
-		</p>
-		<p class="screen-reader-text" id="tapio-clean-backend-order-status" aria-live="polite"></p>
-		<?php
-	}
-
-	/**
-	 * Small version of a menu icon, so the list is easy to match with the sidebar.
-	 *
-	 * @param string $icon Icon from $menu[n][6]: a dashicons class, an SVG data URI or an image URL.
-	 * @return void
-	 */
-	private function render_menu_icon( $icon ) {
-		$icon = (string) $icon;
-
-		if ( 0 === strpos( $icon, 'dashicons-' ) ) {
-			printf( '<span class="dashicons %s tapio-clean-backend-menu-icon" aria-hidden="true"></span>', esc_attr( $icon ) );
-			return;
-		}
-
-		if ( 0 === strpos( $icon, 'data:image/svg+xml;base64,' ) ) {
-			printf( '<img class="tapio-clean-backend-menu-icon" src="%s" alt="" />', esc_attr( $icon ) );
-			return;
-		}
-
-		if ( preg_match( '#^https?://#', $icon ) ) {
-			printf( '<img class="tapio-clean-backend-menu-icon" src="%s" alt="" />', esc_url( $icon ) );
-		}
+		$this->render_checkbox(
+			'collapse_sidebar',
+			__( 'Show a More link in the sidebar', 'tapio-clean-backend' ),
+			__( 'The menus you place under More open when you click it. When this is off, they follow the main menus.', 'tapio-clean-backend' )
+		);
 	}
 
 	/**
@@ -448,23 +316,160 @@ class Settings {
 	 * @return void
 	 */
 	public function render_relocate_notices_field() {
+		$this->render_checkbox(
+			'relocate_notices',
+			__( 'Move admin notices into the Notifications panel in the admin bar', 'tapio-clean-backend' ),
+			__( 'Notices are not discarded. They appear in the admin bar with a badge count.', 'tapio-clean-backend' )
+		);
+	}
+
+	/**
+	 * A feature switch.
+	 *
+	 * @param string $key         Setting key.
+	 * @param string $label       Checkbox label.
+	 * @param string $description Help text.
+	 * @return void
+	 */
+	private function render_checkbox( $key, $label, $description ) {
 		$settings = self::get();
-		$name     = self::OPTION . '[relocate_notices]';
+		$id       = 'tapio-clean-backend-' . str_replace( '_', '-', $key );
 		?>
-		<label for="tapio-clean-backend-relocate-notices">
+		<label for="<?php echo esc_attr( $id ); ?>">
 			<input
 				type="checkbox"
-				id="tapio-clean-backend-relocate-notices"
-				name="<?php echo esc_attr( $name ); ?>"
+				id="<?php echo esc_attr( $id ); ?>"
+				name="<?php echo esc_attr( self::OPTION . '[' . $key . ']' ); ?>"
 				value="1"
-				<?php checked( $settings['relocate_notices'] ); ?>
+				<?php checked( $settings[ $key ] ); ?>
 			/>
-			<?php esc_html_e( 'Move admin notices into the Notifications panel in the admin bar', 'tapio-clean-backend' ); ?>
+			<?php echo esc_html( $label ); ?>
 		</label>
-		<p class="description">
-			<?php esc_html_e( 'Notices are not discarded. They appear in the admin bar with a badge count.', 'tapio-clean-backend' ); ?>
-		</p>
+		<p class="description"><?php echo esc_html( $description ); ?></p>
 		<?php
+	}
+
+	/**
+	 * The sidebar editor: two lists that menus can be dragged between.
+	 *
+	 * @return void
+	 */
+	public function render_menu_editor() {
+		$items      = $this->admin_menu->get_editor_items();
+		$settings   = self::get();
+		$more_label = $settings['menu']['more_label'];
+		$default    = __( 'More', 'tapio-clean-backend' );
+
+		if ( ! $items['main'] && ! $items['more'] ) {
+			echo '<p>' . esc_html__( 'The sidebar could not be read on this screen.', 'tapio-clean-backend' ) . '</p>';
+			return;
+		}
+		?>
+		<p id="tapio-clean-backend-editor-help">
+			<?php esc_html_e( 'Drag menus to change their order or to move them between the sidebar and More. Click a name to rename it; leave the name empty to get the original back. Changes apply to every user when you save.', 'tapio-clean-backend' ); ?>
+		</p>
+		<?php if ( ! $settings['collapse_sidebar'] ) : ?>
+			<p><?php esc_html_e( 'The More link is off. The menus in the More list follow the main ones once you have moved a menu and saved; until then the sidebar keeps the WordPress order.', 'tapio-clean-backend' ); ?></p>
+		<?php endif; ?>
+		<div class="tcb-editor" id="tapio-clean-backend-editor" aria-describedby="tapio-clean-backend-editor-help">
+			<div class="tcb-column">
+				<h3 id="tapio-clean-backend-main-title"><?php esc_html_e( 'Sidebar', 'tapio-clean-backend' ); ?></h3>
+				<p class="tcb-column-help"><?php esc_html_e( 'Always visible.', 'tapio-clean-backend' ); ?></p>
+				<ul class="tcb-list" data-section="main" aria-labelledby="tapio-clean-backend-main-title">
+					<?php
+					foreach ( $items['main'] as $item ) {
+						$this->render_editor_item( $item );
+					}
+					?>
+				</ul>
+			</div>
+			<div class="tcb-column">
+				<h3 id="tapio-clean-backend-more-title">
+					<button
+						type="button"
+						class="tcb-name tcb-more-name"
+						data-original="<?php echo esc_attr( $default ); ?>"
+						data-name="<?php echo esc_attr( $more_label ); ?>"
+						title="<?php esc_attr_e( 'Click to rename', 'tapio-clean-backend' ); ?>"
+					><?php echo esc_html( '' !== $more_label ? $more_label : $default ); ?></button>
+				</h3>
+				<p class="tcb-column-help"><?php esc_html_e( 'Shown when the More link is open. Click the title to rename the link.', 'tapio-clean-backend' ); ?></p>
+				<ul class="tcb-list" data-section="more" aria-labelledby="tapio-clean-backend-more-title" data-empty="<?php esc_attr_e( 'Drag menus here.', 'tapio-clean-backend' ); ?>">
+					<?php
+					foreach ( $items['more'] as $item ) {
+						$this->render_editor_item( $item );
+					}
+					?>
+				</ul>
+			</div>
+		</div>
+		<p class="description" id="tapio-clean-backend-keyboard-help">
+			<?php esc_html_e( 'Keyboard: focus a drag handle and use the up and down arrow keys to move a menu, and the right and left arrow keys to move it to More and back.', 'tapio-clean-backend' ); ?>
+		</p>
+		<p>
+			<button type="button" class="button-link tcb-reset" id="tapio-clean-backend-reset"><?php esc_html_e( 'Restore default menu', 'tapio-clean-backend' ); ?></button>
+		</p>
+		<input type="hidden" id="tapio-clean-backend-menu-json" name="<?php echo esc_attr( self::OPTION . '[menu_json]' ); ?>" value="" />
+		<input type="hidden" id="tapio-clean-backend-reset-menu" name="<?php echo esc_attr( self::OPTION . '[reset_menu]' ); ?>" value="" />
+		<p class="screen-reader-text" id="tapio-clean-backend-status" aria-live="polite"></p>
+		<noscript><p><?php esc_html_e( 'The sidebar editor needs JavaScript. Saving without it keeps the current menu.', 'tapio-clean-backend' ); ?></p></noscript>
+		<?php
+	}
+
+	/**
+	 * One row of the sidebar editor.
+	 *
+	 * @param array{slug: string, title: string, icon: string, separator: bool, name: string} $item Menu.
+	 * @return void
+	 */
+	private function render_editor_item( array $item ) {
+		$title = $item['separator'] ? __( 'Separator', 'tapio-clean-backend' ) : $item['title'];
+		$shown = '' !== $item['name'] ? $item['name'] : $title;
+		?>
+		<li
+			class="tcb-item<?php echo $item['separator'] ? ' tcb-separator' : ''; ?>"
+			data-slug="<?php echo esc_attr( $item['slug'] ); ?>"
+			data-type="<?php echo $item['separator'] ? 'separator' : 'menu'; ?>"
+		>
+			<button
+				type="button"
+				class="tcb-handle"
+				aria-describedby="tapio-clean-backend-keyboard-help"
+				aria-label="<?php /* translators: %s: menu name */ echo esc_attr( sprintf( __( 'Move %s', 'tapio-clean-backend' ), $shown ) ); ?>"
+			><span class="dashicons dashicons-menu" aria-hidden="true"></span></button>
+			<?php if ( $item['separator'] ) : ?>
+				<span class="tcb-separator-label"><?php echo esc_html( $title ); ?></span>
+			<?php else : ?>
+				<?php $this->render_menu_icon( $item['icon'] ); ?>
+				<button
+					type="button"
+					class="tcb-name"
+					data-original="<?php echo esc_attr( $title ); ?>"
+					data-name="<?php echo esc_attr( $item['name'] ); ?>"
+					title="<?php esc_attr_e( 'Click to rename', 'tapio-clean-backend' ); ?>"
+				><?php echo esc_html( $shown ); ?></button>
+				<span class="tcb-original"<?php echo '' === $item['name'] ? ' hidden' : ''; ?>><?php echo esc_html( $title ); ?></span>
+			<?php endif; ?>
+		</li>
+		<?php
+	}
+
+	/**
+	 * Small version of a menu icon, so the rows are easy to match with the sidebar.
+	 *
+	 * @param string $icon Icon from $menu[n][6]: a dashicons class, an SVG data URI, an image URL or nothing.
+	 * @return void
+	 */
+	private function render_menu_icon( $icon ) {
+		if ( 0 === strpos( $icon, 'dashicons-' ) ) {
+			printf( '<span class="dashicons %s tcb-icon" aria-hidden="true"></span>', esc_attr( $icon ) );
+		} elseif ( 0 === strpos( $icon, 'data:image/svg+xml;base64,' ) ) {
+			printf( '<img class="tcb-icon" src="%s" alt="" />', esc_attr( $icon ) );
+		} elseif ( preg_match( '#^(https?:)?//#', $icon ) ) {
+			printf( '<img class="tcb-icon" src="%s" alt="" />', esc_url( $icon ) );
+		} else {
+			echo '<span class="tcb-icon" aria-hidden="true"></span>';
+		}
 	}
 
 	/**
@@ -479,7 +484,19 @@ class Settings {
 		?>
 		<div class="wrap">
 			<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
-			<form action="options.php" method="post">
+			<?php
+			// Shown here, not in the Notifications panel, so saving is confirmed where it happened.
+			if ( isset( $_GET['settings-updated'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Display only.
+				wp_admin_notice(
+					__( 'Settings saved.', 'tapio-clean-backend' ),
+					array(
+						'type'               => 'success',
+						'additional_classes' => array( 'inline' ),
+					)
+				);
+			}
+			?>
+			<form action="options.php" method="post" id="tapio-clean-backend-form">
 				<?php
 				settings_fields( self::GROUP );
 				do_settings_sections( self::PAGE );

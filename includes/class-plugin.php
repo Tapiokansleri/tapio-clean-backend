@@ -24,18 +24,11 @@ class Plugin {
 	private static $instance = null;
 
 	/**
-	 * Menu classifier.
+	 * Whether boot() already ran.
 	 *
-	 * @var Menu_Classifier
+	 * @var bool
 	 */
-	private $menu_classifier;
-
-	/**
-	 * Notices capture.
-	 *
-	 * @var Notices_Capture
-	 */
-	private $notices_capture;
+	private $booted = false;
 
 	/**
 	 * Returns the shared instance.
@@ -56,26 +49,25 @@ class Plugin {
 	 * @return void
 	 */
 	public function boot() {
-		$settings = new Settings();
-		$settings->register();
-
-		// The saved order applies whether or not the More section is on.
-		$menu_order = new Menu_Order();
-		$menu_order->register();
-
-		if ( Settings::is_sidebar_enabled() ) {
-			$this->menu_classifier = new Menu_Classifier();
-			$this->menu_classifier->register();
-
-			$more_menu = new More_Menu();
-			$more_menu->register();
+		if ( $this->booted ) {
+			return;
 		}
+		$this->booted = true;
 
-		if ( Settings::is_notices_enabled() ) {
-			$this->notices_capture = new Notices_Capture();
-			$this->notices_capture->register();
+		$settings = Settings::get();
 
-			$admin_bar = new Admin_Bar_Notifications( $this->notices_capture );
+		// Names and a saved order apply even when the More section is off.
+		$admin_menu = new Admin_Menu( $settings['collapse_sidebar'] );
+		$admin_menu->register();
+
+		$settings_page = new Settings( $admin_menu );
+		$settings_page->register();
+
+		if ( $settings['relocate_notices'] ) {
+			$notices_capture = new Notices_Capture();
+			$notices_capture->register();
+
+			$admin_bar = new Admin_Bar_Notifications( $notices_capture );
 			$admin_bar->register();
 		}
 	}

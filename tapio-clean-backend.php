@@ -2,8 +2,8 @@
 /**
  * Plugin Name: Tapio Clean Backend
  * Plugin URI:  https://github.com/Tapiokansleri/tapio-clean-backend
- * Description: Collapses plugin admin menus under a More accordion and moves admin notices into an admin bar Notifications hub.
- * Version:     1.1.1
+ * Description: Arrange and rename the admin sidebar, keep less used menus under a More link, and read admin notices in an admin bar Notifications panel.
+ * Version:     1.2.0
  * Author:      Tapio Kauranen
  * Author URI:  https://tapiokauranen.com
  * License:     GPL-2.0-or-later
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'TAPIO_CLEAN_BACKEND_VERSION', '1.1.1' );
+define( 'TAPIO_CLEAN_BACKEND_VERSION', '1.2.0' );
 define( 'TAPIO_CLEAN_BACKEND_FILE', __FILE__ );
 define( 'TAPIO_CLEAN_BACKEND_DIR', plugin_dir_path( __FILE__ ) );
 define( 'TAPIO_CLEAN_BACKEND_URL', plugin_dir_url( __FILE__ ) );
@@ -28,7 +28,7 @@ define( 'TAPIO_CLEAN_BACKEND_URL', plugin_dir_url( __FILE__ ) );
 /**
  * Autoloads plugin classes from the includes directory.
  *
- * Maps Tapio\CleanBackend\Menu_Classifier to includes/class-menu-classifier.php.
+ * Maps Tapio\CleanBackend\Menu_Layout to includes/class-menu-layout.php.
  *
  * @param string $class_name Fully qualified class name.
  * @return void

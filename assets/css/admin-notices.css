@@ -2,17 +2,24 @@
  * Admin bar Notifications panel styles for Tapio Clean Backend.
  */
 
-/* Hide notices in the content area; they are relocated into the admin bar. */
-body.tapio-clean-hide-notices #wpbody-content > .notice,
-body.tapio-clean-hide-notices #wpbody-content > .update-nag,
-body.tapio-clean-hide-notices #wpbody-content > .updated,
-body.tapio-clean-hide-notices #wpbody-content > .error,
-body.tapio-clean-hide-notices #wpbody-content > .e-notice,
-body.tapio-clean-hide-notices #wpbody-content > .wrap > .notice,
-body.tapio-clean-hide-notices #wpbody-content > .wrap > .update-nag,
-body.tapio-clean-hide-notices #wpbody-content > .wrap > .updated,
-body.tapio-clean-hide-notices #wpbody-content > .wrap > .error,
-body.tapio-clean-hide-notices #wpbody-content > .wrap > .e-notice {
+/*
+ * Keeps notices from flashing before the script moves them into the admin bar.
+ * The script removes the body class once it has done that, so later notices show.
+ * Without JavaScript (body.no-js) nothing is hidden. Notices marked "inline"
+ * stay in place and are never hidden.
+ */
+body.js.tapio-clean-hide-notices #wpbody-content > :is(.notice, .update-nag, .updated, .error, .e-notice):not(.inline),
+body.js.tapio-clean-hide-notices #wpbody-content > .wrap > :is(.notice, .update-nag, .updated, .error, .e-notice):not(.inline) {
+	display: none !important;
+}
+
+/* The captured notices wait here for the script. Without JavaScript they are shown. */
+body.js .tapio-clean-notices-source {
+	display: none !important;
+}
+
+/* A hidden notice stays hidden also in the panel. */
+#wpadminbar .tapio-clean-notices-panel > .tapio-clean-notice-card.hidden {
 	display: none !important;
 }
 
@@ -386,11 +393,79 @@ body.tapio-clean-hide-notices #wpbody-content > .wrap > .e-notice {
 
 /* Hide junk often dragged in with plugin notices. */
 #wpadminbar .tapio-clean-notices-panel > .tapio-clean-notice-card > style,
-#wpadminbar .tapio-clean-notices-panel > .tapio-clean-notice-card > script,
-#wpadminbar .tapio-clean-notices-panel > .tapio-clean-notice-card .screen-reader-text {
+#wpadminbar .tapio-clean-notices-panel > .tapio-clean-notice-card > script {
 	display: none !important;
 }
 
-.tapio-clean-notices-source[hidden] {
-	display: none !important;
+/* Screen reader text, such as the name of a dismiss button, stays readable by screen readers only. */
+#wpadminbar .tapio-clean-notices-panel .screen-reader-text {
+	position: absolute !important;
+	width: 1px !important;
+	height: 1px !important;
+	overflow: hidden !important;
+	clip-path: inset(50%) !important;
+	white-space: nowrap !important;
+}
+
+/*
+ * Phones: WordPress hides admin bar items it does not know below 783px, which
+ * would put the notices in a menu nobody can open. Show the bell and count, and
+ * fit the panel to the screen.
+ */
+@media screen and (max-width: 782px) {
+	#wpadminbar li#wp-admin-bar-tapio-clean-notifications {
+		display: block;
+	}
+
+	#wpadminbar #wp-admin-bar-tapio-clean-notifications > .ab-item {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 52px;
+		padding: 0 4px;
+		overflow: hidden;
+	}
+
+	#wpadminbar #wp-admin-bar-tapio-clean-notifications > .ab-item .ab-icon {
+		display: block;
+		float: none;
+		width: auto;
+		height: 46px;
+		margin: 0;
+		padding: 0;
+		font-size: 26px;
+		line-height: 46px;
+	}
+
+	#wpadminbar #wp-admin-bar-tapio-clean-notifications > .ab-item .ab-icon:before {
+		position: static;
+		font-size: 26px;
+	}
+
+	#wpadminbar #wp-admin-bar-tapio-clean-notifications > .ab-item .ab-label {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+	}
+
+	#wpadminbar #wp-admin-bar-tapio-clean-notifications > .ab-item .tapio-clean-notice-badge {
+		margin-left: 2px;
+	}
+
+	#wpadminbar #wp-admin-bar-tapio-clean-notifications .ab-sub-wrapper {
+		position: fixed;
+		top: 46px;
+		right: 0;
+		left: 0;
+		width: 100%;
+	}
+
+	#wpadminbar .tapio-clean-notifications-root .ab-submenu,
+	#wpadminbar .tapio-clean-notices-panel {
+		width: 100%;
+		max-width: 100%;
+		max-height: calc(100vh - 56px);
+	}
 }

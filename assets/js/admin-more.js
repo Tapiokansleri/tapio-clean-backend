@@ -1,181 +1,97 @@
 /**
- * Collapses plugin/CPT menus under a More toggle in #adminmenu.
+ * The More link in the admin sidebar.
+ *
+ * Loaded in the page head. WordPress prints the sidebar already in its final
+ * order, with the menus under More hidden by CSS, so this script only opens and
+ * closes the section. setup() runs while the sidebar is being parsed.
  */
-(function () {
+( function () {
 	'use strict';
 
-	var config = window.tapioCleanBackendMore || {};
-	var moreItemClass = config.moreItemClass || 'tapio-more-item';
+	var config = window.tapioCleanBackendMoreConfig || {};
+	var itemClass = config.itemClass || 'tapio-more-item';
 	var storageKey = config.storageKey || 'tapioCleanBackendMoreOpen';
-	var moreLabel = config.moreLabel || 'More';
-	var openClass = 'tapio-more-is-open';
-	var readyClass = 'tapio-more-ready';
-	var enhancedClass = 'tapio-more-enhanced';
-	var itemsId = 'tapio-more-items';
+	var OPEN_CLASS = 'tapio-more-open';
 
-	function isOpen() {
+	function wasOpen() {
 		try {
-			return window.localStorage.getItem(storageKey) === '1';
-		} catch (e) {
+			return window.localStorage.getItem( storageKey ) === '1';
+		} catch ( e ) {
 			return false;
 		}
 	}
 
-	function setOpen(open) {
+	function remember( open ) {
 		try {
-			window.localStorage.setItem(storageKey, open ? '1' : '0');
-		} catch (e) {
-			// Ignore.
+			window.localStorage.setItem( storageKey, open ? '1' : '0' );
+		} catch ( e ) {
+			// Storage can be blocked; the section then starts closed.
 		}
 	}
 
-	function getCollapseMenu(adminmenu) {
-		return adminmenu.querySelector('#collapse-menu');
-	}
+	function setup() {
+		var menu = document.getElementById( 'adminmenu' );
+		var item = document.getElementById( config.toggleId || 'menu-tapio-clean-backend-more' );
+		var link = item ? item.querySelector( 'a' ) : null;
 
-	function applyOpenState(adminmenu, open) {
-		adminmenu.classList.toggle(openClass, open);
-		var toggle = adminmenu.querySelector('.tapio-more-toggle');
-		if (toggle) {
-			toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-		}
-	}
-
-	function toggleOpen(adminmenu) {
-		var open = !adminmenu.classList.contains(openClass);
-		applyOpenState(adminmenu, open);
-		setOpen(open);
-		orderMoreItems(adminmenu);
-	}
-
-	function ensureToggle(adminmenu) {
-		var existing = adminmenu.querySelector('.tapio-more-toggle-item');
-		if (existing) {
-			return existing;
-		}
-
-		var toggleLi = document.createElement('li');
-		toggleLi.className = 'menu-top tapio-more-toggle-item';
-
-		var toggleLink = document.createElement('a');
-		toggleLink.href = '#';
-		toggleLink.className = 'menu-top tapio-more-toggle';
-		toggleLink.setAttribute('role', 'button');
-		toggleLink.setAttribute('aria-expanded', 'false');
-
-		var icon = document.createElement('div');
-		icon.className = 'wp-menu-image dashicons-before dashicons-plus-alt2';
-		icon.setAttribute('aria-hidden', 'true');
-		icon.appendChild(document.createElement('br'));
-
-		var name = document.createElement('div');
-		name.className = 'wp-menu-name';
-		name.textContent = moreLabel;
-
-		toggleLink.appendChild(icon);
-		toggleLink.appendChild(name);
-		toggleLi.appendChild(toggleLink);
-
-		var collapse = getCollapseMenu(adminmenu);
-		if (collapse) {
-			adminmenu.insertBefore(toggleLi, collapse);
-		} else {
-			adminmenu.appendChild(toggleLi);
-		}
-
-		toggleLink.addEventListener('click', function (event) {
-			event.preventDefault();
-			event.stopImmediatePropagation();
-			toggleOpen(adminmenu);
-		});
-
-		toggleLink.addEventListener('keydown', function (event) {
-			if (event.key !== 'Enter' && event.key !== ' ') {
-				return;
-			}
-			event.preventDefault();
-			event.stopImmediatePropagation();
-			toggleOpen(adminmenu);
-		});
-
-		return toggleLi;
-	}
-
-	function orderMoreItems(adminmenu) {
-		var toggle = adminmenu.querySelector('.tapio-more-toggle-item');
-		if (!toggle) {
+		if ( ! menu || ! link ) {
 			return;
 		}
 
-		var collapse = getCollapseMenu(adminmenu);
-		if (!collapse) {
-			return;
+		var moreItems = Array.prototype.filter.call( menu.children, function ( li ) {
+			return li.classList.contains( itemClass );
+		} );
+
+		function apply( open ) {
+			menu.classList.toggle( OPEN_CLASS, open );
+			link.setAttribute( 'aria-expanded', open ? 'true' : 'false' );
 		}
 
-		var items = Array.prototype.slice.call(
-			adminmenu.querySelectorAll(':scope > li.' + moreItemClass)
-		);
-
-		items.forEach(function (li) {
-			li.style.display = '';
-			li.style.maxHeight = '';
-		});
-
-		// More stays fixed directly above "Collapse menu"; plugin items expand below it.
-		adminmenu.insertBefore(toggle, collapse);
-		items.forEach(function (li) {
-			adminmenu.insertBefore(li, collapse);
-		});
-
-		var toggleLink = toggle.querySelector('.tapio-more-toggle');
-		if (toggleLink) {
-			if (items.length) {
-				if (!items[0].id) {
-					items[0].id = itemsId;
-				}
-				toggleLink.setAttribute('aria-controls', items[0].id);
-			} else {
-				toggleLink.removeAttribute('aria-controls');
+		function toggle() {
+			var open = ! menu.classList.contains( OPEN_CLASS );
+			menu.classList.add( 'tapio-more-animate' );
+			apply( open );
+			remember( open );
+			// Lets WordPress recalculate whether the sidebar can stay pinned.
+			if ( window.jQuery ) {
+				window.jQuery( document ).trigger( 'wp-pin-menu' );
 			}
 		}
-	}
 
-	function enableTransitions(adminmenu) {
-		window.requestAnimationFrame(function () {
-			adminmenu.classList.add(readyClass);
-		});
-	}
-
-	function init() {
-		var adminmenu = document.getElementById('adminmenu');
-		if (!adminmenu) {
-			return;
-		}
-
-		ensureToggle(adminmenu);
-		orderMoreItems(adminmenu);
-		adminmenu.classList.add(enhancedClass);
-
-		var hasCurrent = !!adminmenu.querySelector(
-			'li.' + moreItemClass + '.current, li.' + moreItemClass + '.wp-has-current-submenu, li.' + moreItemClass + '.opensub'
+		link.setAttribute( 'role', 'button' );
+		link.setAttribute(
+			'aria-controls',
+			moreItems
+				.map( function ( li, index ) {
+					if ( ! li.id ) {
+						li.id = 'tapio-more-item-' + index;
+					}
+					return li.id;
+				} )
+				.join( ' ' )
 		);
 
-		applyOpenState(adminmenu, hasCurrent || isOpen());
-		enableTransitions(adminmenu);
+		// A screen inside More opens the section without changing the remembered state.
+		apply(
+			wasOpen() ||
+				moreItems.some( function ( li ) {
+					return li.classList.contains( 'current' ) || li.classList.contains( 'wp-has-current-submenu' );
+				} )
+		);
 
-		if (window.jQuery) {
-			window.jQuery(window).trigger('wp-window-resized');
-		}
+		link.addEventListener( 'click', function ( event ) {
+			event.preventDefault();
+			toggle();
+		} );
+
+		// Links react to Enter by themselves; a button also reacts to Space.
+		link.addEventListener( 'keydown', function ( event ) {
+			if ( ' ' === event.key ) {
+				event.preventDefault();
+				toggle();
+			}
+		} );
 	}
 
-	function boot() {
-		init();
-		window.setTimeout(init, 250);
-	}
-
-	if (document.readyState === 'loading') {
-		document.addEventListener('DOMContentLoaded', boot);
-	} else {
-		boot();
-	}
-})();
+	window.tapioCleanBackendMore = { setup: setup };
+}() );

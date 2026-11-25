@@ -110,7 +110,8 @@ class Notices_Capture {
 	 * @return void
 	 */
 	public function start_buffer() {
-		if ( $this->buffering ) {
+		// Capture once. A plugin that fires admin_notices again in its page body keeps its output there.
+		if ( $this->buffering || $this->captured ) {
 			return;
 		}
 

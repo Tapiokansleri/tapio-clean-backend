@@ -1,65 +1,44 @@
 /**
- * More toggle for Tapio Clean Backend.
+ * More section of the admin sidebar.
+ *
+ * This stylesheet loads in the head, and WordPress switches body.no-js to
+ * body.js before it prints the sidebar. The menus under More are therefore
+ * hidden from the first paint, and stay visible when JavaScript is off.
  */
 
-:root {
-	--tapio-more-duration: 300ms;
-	--tapio-more-ease: ease;
+body.js #adminmenu > li.tapio-more-item {
+	display: none;
 }
 
-/* Only collapse after JS confirms the More toggle is in place. */
-#adminmenu.tapio-more-enhanced > li.tapio-more-item {
-	max-height: 0;
-	height: 0;
-	opacity: 0;
-	margin-top: 0;
-	margin-bottom: 0;
-	padding: 0;
-	border: none;
-	pointer-events: none;
-	visibility: hidden;
+body.js #adminmenu.tapio-more-open > li.tapio-more-item {
+	display: list-item;
 }
 
-#adminmenu.tapio-more-enhanced:not(.tapio-more-is-open) > li.tapio-more-item {
-	overflow: hidden;
-	min-height: 0 !important;
+/* Only a click animates; page loads do not. */
+#adminmenu.tapio-more-open.tapio-more-animate > li.tapio-more-item {
+	animation: tapio-more-in 180ms ease-out;
 }
 
-#adminmenu.tapio-more-enhanced:not(.tapio-more-is-open) > li.tapio-more-item .wp-submenu {
-	display: none !important;
+@keyframes tapio-more-in {
+	from {
+		opacity: 0;
+		transform: translateY(-4px);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
 }
 
-#adminmenu.tapio-more-enhanced.tapio-more-ready > li.tapio-more-item {
-	transition:
-		max-height var(--tapio-more-duration) var(--tapio-more-ease),
-		opacity var(--tapio-more-duration) var(--tapio-more-ease),
-		visibility 0s linear var(--tapio-more-duration);
+@media (prefers-reduced-motion: reduce) {
+	#adminmenu.tapio-more-open.tapio-more-animate > li.tapio-more-item {
+		animation: none;
+	}
 }
 
-#adminmenu.tapio-more-enhanced.tapio-more-is-open > li.tapio-more-item {
-	/* Large cap so open/close can animate; must exceed inline submenus (wp-has-current-submenu). */
-	max-height: 2000px;
-	height: auto;
-	opacity: 1;
-	overflow: visible;
-	pointer-events: auto;
-	visibility: visible;
-	flex-shrink: 0;
-	transition:
-		max-height var(--tapio-more-duration) var(--tapio-more-ease),
-		opacity var(--tapio-more-duration) var(--tapio-more-ease),
-		visibility 0s;
-}
-
-#adminmenu.tapio-more-enhanced.tapio-more-is-open > li.tapio-more-item.wp-has-current-submenu,
-#adminmenu.tapio-more-enhanced.tapio-more-is-open > li.tapio-more-item.wp-menu-open {
-	max-height: none;
-}
-
-#adminmenu.tapio-more-enhanced.tapio-more-is-open li.tapio-more-item.opensub,
-#adminmenu.tapio-more-enhanced.tapio-more-is-open li.tapio-more-item.menu-top:hover,
-#adminmenu.tapio-more-enhanced.tapio-more-is-open li.tapio-more-item:focus-within {
-	z-index: 10000;
+/* Without JavaScript every menu is visible, so the More link has no job. */
+body.no-js #menu-tapio-clean-backend-more {
+	display: none;
 }
 
 /* Keep "Collapse menu" at the bottom when the visible menu is short. */
@@ -84,40 +63,22 @@
 	}
 }
 
-@media (prefers-reduced-motion: reduce) {
-	#adminmenu.tapio-more-enhanced.tapio-more-ready > li.tapio-more-item {
-		transition: none;
-	}
-}
-
-/* More toggle stays visible. */
-#adminmenu.tapio-more-enhanced:not(.tapio-more-is-open) > li.tapio-more-toggle-item {
-	display: list-item !important;
-}
-
+/* The More link. It opens a section and is never the current screen. */
 #adminmenu .tapio-more-toggle-item {
 	border-top: 1px solid #2c3338;
-}
-
-/* More is a section header, not the active admin screen. */
-#adminmenu .tapio-more-toggle-item.current > a.menu-top,
-#adminmenu .tapio-more-toggle-item.wp-has-current-submenu > a.menu-top {
-	background: transparent;
-	color: #c3c4c7;
-}
-
-#adminmenu.tapio-more-is-open .tapio-more-toggle-item > a.menu-top {
-	color: #72aee6;
 }
 
 #adminmenu .tapio-more-toggle-item > a.menu-top {
 	cursor: pointer;
 }
 
-/* Chevron on label (same row as core menu items). */
+#adminmenu.tapio-more-open .tapio-more-toggle-item > a.menu-top {
+	color: #72aee6;
+}
+
 #adminmenu .tapio-more-toggle-item .wp-menu-name {
 	position: relative;
-	padding-right: 28px !important;
+	padding-right: 28px;
 }
 
 #adminmenu .tapio-more-toggle-item .wp-menu-name::after {
@@ -128,14 +89,13 @@
 	position: absolute;
 	right: 8px;
 	top: 50%;
-	transform: translateY(-50%) rotate(0deg);
+	transform: translateY(-50%);
 	color: #a7aaad;
 	speak: never;
 	-webkit-font-smoothing: antialiased;
-	transition: transform var(--tapio-more-duration) var(--tapio-more-ease), color 200ms ease;
 }
 
-#adminmenu.tapio-more-is-open .tapio-more-toggle-item .wp-menu-name::after {
+#adminmenu.tapio-more-open .tapio-more-toggle-item .wp-menu-name::after {
 	transform: translateY(-50%) rotate(180deg);
 }
 
