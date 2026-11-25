@@ -1,0 +1,368 @@
+/**
+ * Tools > Tapio Clean Backend: the sidebar editor.
+ *
+ * Drawn like the admin sidebar. The colors below are the default scheme; the
+ * script replaces them with the colors of the user's sidebar.
+ */
+
+.tcb-help {
+	max-width: 720px;
+}
+
+.tcb-sidebar {
+	--tcb-bg: #1d2327;
+	--tcb-text: #f0f0f1;
+	--tcb-icon: #a7aaad;
+	--tcb-hover: #2c3338;
+	--tcb-accent: #72aee6;
+	--tcb-bubble-bg: #d63638;
+	--tcb-bubble-text: #fff;
+	width: 160px;
+	margin: 12px 0;
+	padding: 12px 0;
+	background: var(--tcb-bg);
+}
+
+.tcb-sidebar .tcb-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.tcb-sidebar .tcb-item,
+.tcb-more-row,
+.tcb-add-separator {
+	position: relative;
+	display: flex;
+	align-items: flex-start;
+	box-sizing: border-box;
+	min-height: 34px;
+	margin: 0;
+	color: var(--tcb-text);
+	font-size: 14px;
+	line-height: 1.3;
+}
+
+.tcb-sidebar .tcb-item {
+	cursor: grab;
+	user-select: none;
+}
+
+.tcb-sidebar .tcb-item:hover,
+.tcb-sidebar .tcb-item:focus-within,
+.tcb-sidebar .tcb-item.ui-sortable-helper {
+	background: var(--tcb-hover);
+}
+
+.tcb-sidebar .tcb-item:hover .tcb-label,
+.tcb-sidebar .tcb-item:hover > .tcb-icon {
+	color: var(--tcb-accent);
+}
+
+.tcb-sidebar .tcb-item.ui-sortable-helper {
+	width: 160px !important;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+	cursor: grabbing;
+}
+
+.tcb-sidebar .tcb-placeholder {
+	visibility: visible !important;
+	margin: 0;
+	background: rgba(255, 255, 255, 0.08);
+	box-shadow: inset 3px 0 0 var(--tcb-accent);
+}
+
+/* Icons, as wide as the sidebar's icon column. */
+.tcb-sidebar .tcb-icon {
+	display: flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 34px;
+	color: var(--tcb-icon);
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: 20px auto;
+	font-size: 20px;
+	line-height: 1;
+}
+
+.tcb-sidebar .tcb-icon.dashicons::before,
+.tcb-sidebar .tcb-icon > span {
+	font-size: 20px;
+	line-height: 1;
+}
+
+.tcb-sidebar .tcb-icon img {
+	max-width: 20px;
+	max-height: 20px;
+	opacity: 0.6;
+}
+
+.tcb-label {
+	flex: 1;
+	min-width: 0;
+	padding: 8px 8px 8px 0;
+	overflow-wrap: break-word;
+}
+
+/* Count bubbles, as in the sidebar. */
+.tcb-sidebar .tcb-label > span {
+	display: inline-block;
+	box-sizing: border-box;
+	min-width: 18px;
+	height: 18px;
+	margin: 0 0 0 4px;
+	padding: 0 5px;
+	border-radius: 9px;
+	background: var(--tcb-bubble-bg);
+	color: var(--tcb-bubble-text);
+	font-size: 11px;
+	line-height: 18px;
+	text-align: center;
+	vertical-align: top;
+}
+
+.tcb-sidebar .tcb-label > span.count-0 {
+	display: none;
+}
+
+/* The name reads as a menu name and turns into a field when clicked. */
+.tcb-sidebar .tcb-name {
+	display: inline;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: inherit;
+	font: inherit;
+	text-align: left;
+	cursor: text;
+}
+
+.tcb-sidebar .tcb-name:hover {
+	text-decoration: underline dotted;
+}
+
+.tcb-sidebar .tcb-input {
+	width: 100%;
+	min-height: 24px;
+	margin: -3px 0;
+	padding: 0 4px;
+	font-size: 13px;
+	line-height: 22px;
+}
+
+.tcb-sidebar .tcb-name:focus-visible,
+.tcb-sidebar .tcb-action:focus-visible,
+.tcb-sidebar .tcb-separator:focus-visible,
+.tcb-sidebar .tcb-add-separator:focus-visible {
+	outline: 2px solid var(--tcb-accent);
+	outline-offset: -2px;
+}
+
+/*
+ * The eye and remove buttons show on hover and keyboard focus. They lie over
+ * the row, so names wrap exactly as in the sidebar.
+ */
+.tcb-sidebar .tcb-action {
+	position: absolute;
+	top: 5px;
+	right: 4px;
+	width: 24px;
+	height: 24px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 3px;
+	background: var(--tcb-hover);
+	color: var(--tcb-icon);
+	font-size: 18px;
+	line-height: 24px;
+	cursor: pointer;
+	opacity: 0;
+}
+
+.tcb-sidebar .tcb-item:hover .tcb-action,
+.tcb-sidebar .tcb-item:focus-within .tcb-action {
+	opacity: 1;
+}
+
+.tcb-sidebar .tcb-action:hover {
+	color: var(--tcb-accent);
+}
+
+/* Hidden items are dimmed and keep their crossed-out eye in view. */
+.tcb-sidebar .tcb-is-hidden > .tcb-icon,
+.tcb-sidebar .tcb-is-hidden > .tcb-label,
+.tcb-sidebar .tcb-is-hidden > .tcb-line {
+	opacity: 0.35;
+}
+
+.tcb-sidebar .tcb-is-hidden > .tcb-eye {
+	opacity: 1;
+}
+
+.tcb-sidebar .tcb-item.tcb-is-hidden:not(:hover):not(:focus-within) > .tcb-eye {
+	background: transparent;
+}
+
+.tcb-sidebar .tcb-is-hidden > .tcb-label {
+	padding-right: 30px;
+}
+
+/* A separator is a faint line, so it can be seen and dragged. */
+.tcb-sidebar .tcb-item.tcb-separator {
+	align-items: center;
+	min-height: 14px;
+	height: 14px;
+}
+
+.tcb-sidebar .tcb-line {
+	flex: 1;
+	height: 1px;
+	margin: 0 8px 0 12px;
+	background: rgba(255, 255, 255, 0.15);
+}
+
+.tcb-sidebar .tcb-separator > .tcb-action {
+	top: 50%;
+	height: 20px;
+	line-height: 20px;
+	transform: translateY(-50%);
+}
+
+.tcb-flash {
+	animation: tcb-flash 1.6s ease-out;
+}
+
+@keyframes tcb-flash {
+	0%,
+	40% {
+		box-shadow: inset 0 0 0 7px var(--tcb-accent);
+	}
+	100% {
+		box-shadow: inset 0 0 0 7px transparent;
+	}
+}
+
+/* The More link, open, as in the sidebar. */
+.tcb-more-row {
+	border-top: 1px solid var(--tcb-hover);
+}
+
+.tcb-sidebar .tcb-more-row > .tcb-icon,
+.tcb-more-row .tcb-label {
+	color: var(--tcb-accent);
+}
+
+.tcb-sidebar .tcb-chevron {
+	align-self: center;
+	width: 16px;
+	height: 16px;
+	margin-right: 8px;
+	color: var(--tcb-accent);
+	font-size: 16px;
+}
+
+.tcb-sidebar .tcb-list[data-section="more"] {
+	min-height: 24px;
+}
+
+.tcb-sidebar .tcb-list[data-empty]:not(:has(> li))::before {
+	content: attr(data-empty);
+	display: block;
+	padding: 6px 12px 6px 36px;
+	color: var(--tcb-icon);
+	font-size: 12px;
+}
+
+.tcb-sidebar .tcb-add-separator {
+	width: 100%;
+	margin-top: 8px;
+	padding: 0;
+	border: 0;
+	border-top: 1px solid var(--tcb-hover);
+	background: none;
+	color: var(--tcb-icon);
+	text-align: left;
+	cursor: pointer;
+}
+
+.tcb-sidebar .tcb-add-separator:hover {
+	background: var(--tcb-hover);
+	color: var(--tcb-accent);
+}
+
+.tcb-sidebar .tcb-add-separator > .tcb-icon {
+	color: inherit;
+}
+
+/* Touch screens: a grip drags, and the buttons are always in view. */
+.tcb-sidebar .tcb-grip {
+	display: none;
+}
+
+@media (pointer: coarse) {
+	.tcb-sidebar .tcb-grip {
+		display: block;
+		flex: none;
+		align-self: center;
+		width: 28px;
+		height: 28px;
+		color: var(--tcb-icon);
+		font-size: 18px;
+		line-height: 28px;
+		touch-action: none;
+	}
+
+	.tcb-sidebar .tcb-action {
+		right: 30px;
+		opacity: 1;
+	}
+
+	.tcb-sidebar .tcb-item:not(.tcb-separator) > .tcb-label {
+		padding-right: 30px;
+	}
+
+	.tcb-sidebar .tcb-item.tcb-separator {
+		min-height: 30px;
+		height: 30px;
+	}
+
+}
+
+/* Save status, in view wherever the page is scrolled. */
+.tcb-toast {
+	position: fixed;
+	right: 20px;
+	bottom: 20px;
+	z-index: 100000;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	max-width: calc(100vw - 40px);
+	padding: 10px 16px;
+	border-radius: 4px;
+	background: #1d2327;
+	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+	color: #fff;
+}
+
+.tcb-toast[hidden] {
+	display: none;
+}
+
+.tcb-toast.is-error {
+	background: #b32d2e;
+}
+
+.tcb-toast .button-link {
+	color: #fff;
+	text-decoration: underline;
+}
+
+.button-link.tcb-reset {
+	color: #b32d2e;
+}

@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Tapio Clean Backend 1.0.0\n"
+"Project-Id-Version: Tapio Clean Backend 1.3.0\n"
 "Language: fi\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -8,54 +8,132 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Domain: tapio-clean-backend\n"
 
-#: includes/class-more-menu.php:59
-msgid "More"
-msgstr "Lisää"
-
-#: includes/class-admin-bar-notifications.php:76
-#: includes/class-admin-bar-notifications.php:80
-#: includes/class-settings.php:176
-msgid "Notifications"
-msgstr "Ilmoitukset"
-
-#: includes/class-admin-bar-notifications.php:91
-#: includes/class-admin-bar-notifications.php:137
-msgid "No notifications"
-msgstr "Ei ilmoituksia"
-
-#: includes/class-settings.php:120
-msgid "Settings"
-msgstr "Asetukset"
-
-#: includes/class-settings.php:134
-#: includes/class-settings.php:135
 msgid "Tapio Clean Backend"
 msgstr "Tapio Clean Backend"
 
-#: includes/class-settings.php:161
+msgid "Arrange, rename and hide admin sidebar items, keep less used menus under a More link, and read admin notices in an admin bar Notifications panel."
+msgstr "Järjestä, nimeä ja piilota ylläpidon sivupalkin kohtia, kerää harvemmin käytetyt Lisää-linkin alle ja lue ylläpidon ilmoitukset yläpalkin Ilmoitukset-paneelista."
+
+msgid "Notifications"
+msgstr "Ilmoitukset"
+
+msgid "No notifications"
+msgstr "Ei ilmoituksia"
+
+msgid "More"
+msgstr "Lisää"
+
+msgid "Edit sidebar menu"
+msgstr "Muokkaa sivupalkkia"
+
+msgid "Saving…"
+msgstr "Tallennetaan…"
+
+msgid "Saved"
+msgstr "Tallennettu"
+
+msgid "Saving failed. Check the connection, or reload the page."
+msgstr "Tallennus epäonnistui. Tarkista yhteys tai lataa sivu uudelleen."
+
+msgid "Try again"
+msgstr "Yritä uudelleen"
+
+msgid "Menu name"
+msgstr "Valikon nimi"
+
+#. translators: %s: original menu name
+msgid "Click to rename. Original name: %s"
+msgstr "Nimeä uudelleen klikkaamalla. Alkuperäinen nimi: %s"
+
+#. translators: %s: new menu name
+msgid "Name is now %s."
+msgstr "Nimi on nyt %s."
+
+#. translators: %s: menu name
+msgid "Hide %s"
+msgstr "Piilota %s"
+
+#. translators: %s: menu name
+msgid "Show %s"
+msgstr "Näytä %s"
+
+#. translators: %s: menu name
+msgid "%s is now hidden."
+msgstr "%s on nyt piilotettu."
+
+#. translators: %s: menu name
+msgid "%s is shown again."
+msgstr "%s näkyy taas."
+
+msgid "Separator"
+msgstr "Erotin"
+
+msgid "Remove separator"
+msgstr "Poista erotin"
+
+msgid "A new separator was added above the More link. Drag it where you want it."
+msgstr "Uusi erotin lisättiin Lisää-linkin yläpuolelle. Raahaa se haluamaasi kohtaan."
+
+msgid "Sidebar"
+msgstr "Sivupalkki"
+
+#. translators: 1: menu name, 2: list name, 3: position, 4: number of menus in the list
+msgid "%1$s is now in %2$s, position %3$d of %4$d."
+msgstr "%1$s on nyt listassa %2$s kohdassa %3$d / %4$d."
+
+msgid "Click again to restore the default menu and names"
+msgstr "Palauta oletusvalikko ja nimet klikkaamalla uudelleen"
+
+msgid "Settings"
+msgstr "Asetukset"
+
 msgid "Features"
 msgstr "Toiminnot"
 
-#: includes/class-settings.php:168
 msgid "Sidebar More"
 msgstr "Sivupalkin Lisää"
 
-#: includes/class-settings.php:206
+msgid "Sidebar menu"
+msgstr "Sivupalkin valikko"
+
 msgid "Nothing is removed. These switches only choose which rearrangements are active."
 msgstr "Mitään ei poisteta. Näillä kytkimillä valitset vain, mitkä uudelleenjärjestelyt ovat käytössä."
 
-#: includes/class-settings.php:226
-msgid "Collapse plugin and custom post type menus under More"
-msgstr "Tiivistä lisäosien ja mukautettujen sisältötyyppien valikot Lisää-osion alle"
+msgid "Show a More link in the sidebar"
+msgstr "Näytä Lisää-linkki sivupalkissa"
 
-#: includes/class-settings.php:229
-msgid "Core menus stay in the sidebar. Plugin menus remain available inside the More section."
-msgstr "WordPressin ydinvalikot pysyvät sivupalkissa. Lisäosien valikot ovat edelleen käytettävissä Lisää-osiossa."
+msgid "The menus you place under More open when you click it. When this is off, they follow the main menus."
+msgstr "Lisää-linkin alle sijoittamasi valikot avautuvat, kun klikkaat sitä. Kun tämä on pois päältä, ne näkyvät päävalikoiden jälkeen."
 
-#: includes/class-settings.php:251
 msgid "Move admin notices into the Notifications panel in the admin bar"
-msgstr "Siirrä ylläpidon ilmoitukset ilmoituspalkin Ilmoitukset-paneeliin"
+msgstr "Siirrä ylläpidon ilmoitukset yläpalkin Ilmoitukset-paneeliin"
 
-#: includes/class-settings.php:254
 msgid "Notices are not discarded. They appear in the admin bar with a badge count."
-msgstr "Ilmoituksia ei hävitetä. Ne näkyvät ilmoituspalkissa merkin kanssa."
+msgstr "Ilmoituksia ei hävitetä. Ne näkyvät yläpalkissa, ja niiden määrä näkyy laskurissa."
+
+msgid "The sidebar could not be read on this screen."
+msgstr "Sivupalkkia ei voitu lukea tällä sivulla."
+
+msgid "Drag to reorder. Items below the More link show when it is open. Click a name to rename it (an empty name restores the original), or the eye to hide it. Changes save as you make them and apply to every user."
+msgstr "Järjestä raahaamalla. Lisää-linkin alla olevat näkyvät, kun linkki on auki. Nimeä uudelleen klikkaamalla nimeä (tyhjä nimi palauttaa alkuperäisen) tai piilota silmäkuvakkeella. Muutokset tallentuvat heti ja koskevat kaikkia käyttäjiä."
+
+msgid "The More link is off, so the items below it follow the main ones once you have moved something; until then the sidebar keeps the WordPress order."
+msgstr "Lisää-linkki on pois päältä. Kun olet siirtänyt jotakin, sen alla olevat näkyvät päävalikoiden jälkeen. Siihen asti sivupalkki pitää WordPressin järjestyksen."
+
+msgid "Keyboard: focus an item and use the up and down arrow keys to move it."
+msgstr "Näppäimistöllä: valitse kohta ja siirrä sitä ylös- ja alas-nuolilla."
+
+msgid "Drag items here."
+msgstr "Raahaa kohtia tähän."
+
+msgid "New separator"
+msgstr "Uusi erotin"
+
+msgid "Restore default menu"
+msgstr "Palauta oletusvalikko"
+
+msgid "The sidebar editor needs JavaScript. Saving without it keeps the current menu."
+msgstr "Sivupalkin muokkaus vaatii JavaScriptin. Ilman sitä tallennus säilyttää nykyisen valikon."
+
+msgid "Settings saved."
+msgstr "Asetukset tallennettu."
