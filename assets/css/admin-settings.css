@@ -1,0 +1,76 @@
+/**
+ * Tools > Tapio Clean Backend: sortable plugin menu list.
+ */
+
+.tapio-clean-backend-menus {
+	max-width: 560px;
+	margin: 8px 0;
+}
+
+.tapio-clean-backend-menus .tapio-clean-backend-menu {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0 0 4px;
+	padding: 6px 10px 6px 6px;
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+}
+
+.tapio-clean-backend-menus .tapio-clean-backend-menu label {
+	display: flex;
+	flex: 1;
+	align-items: center;
+	gap: 6px;
+	margin: 0;
+}
+
+.tapio-clean-backend-menus .tapio-clean-backend-menu input[type="checkbox"] {
+	margin: 0;
+}
+
+.tapio-clean-backend-handle {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	padding: 0;
+	border: 0;
+	border-radius: 3px;
+	background: none;
+	color: #646970;
+	cursor: move;
+}
+
+.tapio-clean-backend-handle:hover {
+	color: #1d2327;
+}
+
+.tapio-clean-backend-handle:focus {
+	color: #1d2327;
+	outline: 2px solid #2271b1;
+	outline-offset: 1px;
+	box-shadow: none;
+}
+
+.tapio-clean-backend-menu-icon {
+	width: 20px;
+	height: 20px;
+	font-size: 20px;
+	color: #646970;
+	object-fit: contain;
+}
+
+.tapio-clean-backend-menus .ui-sortable-helper {
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.tapio-clean-backend-placeholder {
+	visibility: visible !important;
+	margin: 0 0 4px;
+	border: 1px dashed #2271b1;
+	border-radius: 4px;
+	background: #f0f6fc;
+}

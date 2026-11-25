@@ -115,7 +115,7 @@ body.tapio-clean-hide-notices #wpbody-content > .wrap > .e-notice {
  * Skip dismiss controls and icon fonts so glyphs do not break.
  */
 #wpadminbar .tapio-clean-notices-panel,
-#wpadminbar .tapio-clean-notices-panel *:not(.notice-dismiss):not(.e-notice__dismiss):not(.dashicons):not([class*="eicon"]) {
+#wpadminbar .tapio-clean-notices-panel *:not(.notice-dismiss):not(.e-notice__dismiss):not(.dashicons):not([class*="eicon"]):not(svg) {
 	float: none !important;
 	height: auto !important;
 	min-height: 0 !important;
@@ -154,6 +154,42 @@ body.tapio-clean-hide-notices #wpbody-content > .wrap > .e-notice {
 	overflow: visible !important;
 	transition: none !important;
 	animation: none !important;
+}
+
+/*
+ * The cards never shrink: the panel scrolls instead. (The min-height: 0 above let the flex column squash a tall card
+ * and its text ran over the next one.)
+ */
+#wpadminbar .tapio-clean-notices-panel > .tapio-clean-notice-card {
+	flex: 0 0 auto !important;
+}
+
+/* Whatever a plugin puts inside a card stays inside it: no layout wider than the card, icons keep their size. */
+#wpadminbar .tapio-clean-notices-panel > .tapio-clean-notice-card :is(div, section, form, table, ul, ol) {
+	max-width: 100% !important;
+	box-sizing: border-box !important;
+}
+
+#wpadminbar .tapio-clean-notices-panel > .tapio-clean-notice-card img {
+	max-width: 100% !important;
+	height: auto !important;
+}
+
+#wpadminbar .tapio-clean-notices-panel > .tapio-clean-notice-card svg:not([width]) {
+	flex: none;
+	width: 20px;
+	height: 20px;
+}
+
+/* The decorative icon some plugins draw in front of a notice (WPML's round info icon) sat on top of the text. */
+#wpadminbar .tapio-clean-notices-panel > .tapio-clean-notice-card::before {
+	display: none !important;
+	content: none !important;
+}
+
+/* WPML's "show / hide the rest" toggle (a round button that sat on top of the text): the whole text is shown here. */
+#wpadminbar .tapio-clean-notices-panel > .tapio-clean-notice-card button:is(.notice-collapse, [class*="otgs-notice-collapse"]) {
+	display: none !important;
 }
 
 /* Elementor e-notice: keep content compact, hide broken icon rail. */

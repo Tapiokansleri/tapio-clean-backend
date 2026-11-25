@@ -59,6 +59,10 @@ class Plugin {
 		$settings = new Settings();
 		$settings->register();
 
+		// The saved order applies whether or not the More section is on.
+		$menu_order = new Menu_Order();
+		$menu_order->register();
+
 		if ( Settings::is_sidebar_enabled() ) {
 			$this->menu_classifier = new Menu_Classifier();
 			$this->menu_classifier->register();

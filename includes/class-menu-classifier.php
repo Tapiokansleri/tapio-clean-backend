@@ -73,7 +73,7 @@ class Menu_Classifier {
 	}
 
 	/**
-	 * Whether a menu slug should stay in the main sidebar.
+	 * Whether a menu slug is a WordPress core menu that always stays in the main sidebar.
 	 *
 	 * @param string $slug Menu file / slug from $menu[n][2].
 	 * @return bool
@@ -106,6 +106,94 @@ class Menu_Classifier {
 	}
 
 	/**
+	 * Whether the user chose to keep a menu in the main sidebar.
+	 *
+	 * @param string   $slug Menu file / slug from $menu[n][2].
+	 * @param string[] $kept Slugs ticked on the settings page.
+	 * @return bool
+	 */
+	public function is_kept_menu( $slug, $kept ) {
+		foreach ( $kept as $kept_slug ) {
+			if ( self::slugs_match( $slug, $kept_slug ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Whether two menu slugs point to the same menu.
+	 *
+	 * Query-string slugs can arrive with &amp; or with a plain ampersand.
+	 *
+	 * @param string $a Menu slug.
+	 * @param string $b Menu slug.
+	 * @return bool
+	 */
+	public static function slugs_match( $a, $b ) {
+		$a = (string) $a;
+		$b = (string) $b;
+
+		return $a === $b || html_entity_decode( $a, ENT_QUOTES ) === html_entity_decode( $b, ENT_QUOTES );
+	}
+
+	/**
+	 * Top-level menus that can go under More, in sidebar order.
+	 *
+	 * Used by the settings page, so it lists every non-core menu whether or not
+	 * the user has chosen to keep it in the main sidebar.
+	 *
+	 * @return array<string, array{title: string, icon: string}> Menu slug => title and icon.
+	 */
+	public function get_candidate_menus() {
+		global $menu;
+
+		$candidates = array();
+
+		if ( ! is_array( $menu ) ) {
+			return $candidates;
+		}
+
+		foreach ( $menu as $item ) {
+			if ( ! is_array( $item ) || ! isset( $item[2] ) ) {
+				continue;
+			}
+
+			$slug = (string) $item[2];
+
+			if ( '' === $slug || $this->is_core_menu( $slug ) || isset( $candidates[ $slug ] ) ) {
+				continue;
+			}
+
+			$title = $this->clean_title( isset( $item[0] ) ? $item[0] : '' );
+
+			$candidates[ $slug ] = array(
+				'title' => '' !== $title ? $title : $slug,
+				'icon'  => isset( $item[6] ) ? (string) $item[6] : '',
+			);
+		}
+
+		return $candidates;
+	}
+
+	/**
+	 * Menu title without update and notification count bubbles.
+	 *
+	 * @param string $title Raw menu title from $menu[n][0].
+	 * @return string
+	 */
+	private function clean_title( $title ) {
+		$title = preg_replace(
+			'#<span[^>]*class="[^"]*(count|update|awaiting|badge|pending|notification)[^"]*"[^>]*>.*?</span>#is',
+			'',
+			(string) $title
+		);
+
+		return trim( wp_strip_all_tags( (string) $title ) );
+	}
+
+	/**
 	 * Tags non-core top-level menus and records moved slugs.
 	 *
 	 * @return void
@@ -118,6 +206,7 @@ class Menu_Classifier {
 		}
 
 		$this->moved_slugs = array();
+		$kept              = Settings::get_kept_slugs();
 
 		foreach ( $menu as $index => $item ) {
 			if ( ! is_array( $item ) || ! isset( $item[2] ) ) {
@@ -126,7 +215,7 @@ class Menu_Classifier {
 
 			$slug = (string) $item[2];
 
-			if ( $this->is_core_menu( $slug ) ) {
+			if ( $this->is_core_menu( $slug ) || $this->is_kept_menu( $slug, $kept ) ) {
 				continue;
 			}
 

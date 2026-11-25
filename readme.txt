@@ -4,7 +4,7 @@ Tags: admin, admin menu, admin notices, dashboard, admin bar
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.1.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -45,6 +45,7 @@ The notices keep their original styling cues (success, warning, error, info), th
 Open **Tools > Tapio Clean Backend** to turn each feature on or off independently:
 
 * **Sidebar More** — collapse plugin menus under More.
+* **Plugin menus**: drag the rows to set the order of plugin and custom post type menus, in the sidebar and under More, and tick the ones that stay in the main sidebar. Everything you leave unticked goes under More.
 * **Notifications** — move admin notices into the admin bar.
 
 Both are on by default. Turning a switch off restores that part of the admin to standard WordPress.
@@ -109,11 +110,19 @@ add_filter( 'tapio_clean_backend_enabled', '__return_false' );
 
 = Where are the settings? =
 
-**Tools > Tapio Clean Backend.** There you can turn Sidebar More and Notifications on or off independently.
+**Tools > Tapio Clean Backend.** There you can turn Sidebar More and Notifications on or off independently, and choose which menus stay in the main sidebar.
+
+= Can I keep a plugin menu out of More? =
+
+Yes. Tick it in the **Plugin menus** list on Tools > Tapio Clean Backend and it stays in the main sidebar. The list shows every plugin and custom post type menu with its icon.
+
+= Can I change the order of plugin menus? =
+
+Yes. Drag the rows in the **Plugin menus** list, or focus a row's handle and use the up and down arrow keys, then save. WordPress core menus keep their places. Plugin and custom post type menus trade places among themselves, and the More section follows the same order. **Restore default order** puts the list back the way WordPress arranged it.
 
 = Does the plugin store anything in my database? =
 
-One option, `tapio_clean_backend_settings`, for those two switches. No tables and no post meta. Whether you left the **More** section open is stored only in your own browser. Uninstalling the plugin deletes the option.
+One option, `tapio_clean_backend_settings`, for those two switches, the menus you keep in the sidebar and your menu order. No tables and no post meta. Whether you left the **More** section open is stored only in your own browser. Uninstalling the plugin deletes the option.
 
 = What happens if JavaScript is disabled or blocked? =
 
@@ -128,6 +137,14 @@ Yes. On regular site admin screens it works as described. Network Admin screens 
 Your admin returns to its default appearance immediately. Uninstalling also deletes the settings option.
 
 == Changelog ==
+
+= 1.1.1 =
+* Fix: a "Undefined array key" warning and a PHP "array_flip()" warning in the admin menu when the saved menu order met a menu that appears twice (the slots of the sidebar are now filled by position).
+* Fix: the Notifications panel: tall notices (for example WPML's) no longer shrink and run over the next one, small svg icons keep their size (they were stretched to the width of the panel), a notice's layout stays inside its card, and the round "collapse" buttons of WPML notices are hidden (they sat on top of the text), and the round icon some plugins draw in front of a notice is hidden.
+
+= 1.1.0 =
+* Keep in the sidebar: tick plugin and custom post type menus on the settings page to keep them in the main sidebar instead of More.
+* Drag to reorder plugin and custom post type menus, in the sidebar and under More. Keyboard users can move rows with the arrow keys.
 
 = 1.0.0 =
 * Initial WordPress.org release.
