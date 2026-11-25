@@ -27,17 +27,72 @@ class Menu_Layout {
 	const MAX_NAME_LENGTH = 60;
 
 	/**
+	 * Slugs of the separator lines the user adds. The "separator" prefix makes
+	 * WordPress treat them like its own separators.
+	 *
+	 * @var string
+	 */
+	const CUSTOM_SEPARATOR_PATTERN = '/^separator-tapio-[a-z0-9]{4,16}$/';
+
+	/**
 	 * An empty saved layout: nothing chosen yet.
 	 *
-	 * @return array{main: string[], more: string[], names: array<string, string>, more_label: string}
+	 * @return array{main: string[], more: string[], hidden: string[], names: array<string, string>, more_label: string}
 	 */
 	public static function empty_layout() {
 		return array(
 			'main'       => array(),
 			'more'       => array(),
+			'hidden'     => array(),
 			'names'      => array(),
 			'more_label' => '',
 		);
+	}
+
+	/**
+	 * Whether a slug is a separator the user added.
+	 *
+	 * @param string $slug Menu slug.
+	 * @return bool
+	 */
+	public static function is_custom_separator( $slug ) {
+		return (bool) preg_match( self::CUSTOM_SEPARATOR_PATTERN, (string) $slug );
+	}
+
+	/**
+	 * The separators the user added, wherever they are in a saved layout.
+	 *
+	 * @param array $saved Saved layout.
+	 * @return string[]
+	 */
+	public static function custom_separators( array $saved ) {
+		$slugs = array_merge(
+			isset( $saved['main'] ) ? (array) $saved['main'] : array(),
+			isset( $saved['more'] ) ? (array) $saved['more'] : array()
+		);
+
+		return array_values( array_filter( $slugs, array( __CLASS__, 'is_custom_separator' ) ) );
+	}
+
+	/**
+	 * A key for a menu that is safe in a CSS class name.
+	 *
+	 * @param string $slug Menu slug.
+	 * @return string
+	 */
+	public static function key_for( $slug ) {
+		return self::is_custom_separator( $slug ) ? (string) $slug : 'm' . substr( md5( self::normalize_slug( $slug ) ), 0, 12 );
+	}
+
+	/**
+	 * Whether a menu is in a list of slugs.
+	 *
+	 * @param string   $slug  Menu slug.
+	 * @param string[] $slugs List.
+	 * @return bool
+	 */
+	public static function contains( $slug, array $slugs ) {
+		return in_array( self::normalize_slug( $slug ), array_map( array( __CLASS__, 'normalize_slug' ), $slugs ), true );
 	}
 
 	/**
@@ -107,10 +162,10 @@ class Menu_Layout {
 	/**
 	 * Splits the menus into the main sidebar and More, each in display order.
 	 *
-	 * With a saved layout, saved menus keep their saved section and order. A menu
-	 * the layout does not know yet (a newly activated plugin, for example) goes
-	 * to More, or, if it is a WordPress core menu, into the main sidebar after
-	 * the menu it normally follows. Separators only exist in the main sidebar.
+	 * With a saved layout, saved menus and separators keep their saved section
+	 * and order. A menu the layout does not know yet (a newly activated plugin,
+	 * for example) goes to More, or, if it is a WordPress core menu, into the
+	 * main sidebar after the menu it normally follows. So does a new separator.
 	 *
 	 * Without a saved layout, core menus stay in the main sidebar and the rest go
 	 * to More, taking into account the choices stored by versions 1.1.x.
@@ -169,9 +224,8 @@ class Menu_Layout {
 					continue;
 				}
 
-				$target              = isset( $separator[ $key ] ) ? 'main' : $section;
-				$layout[ $target ][] = $key;
-				$placed[ $key ]      = true;
+				$layout[ $section ][] = $key;
+				$placed[ $key ]       = true;
 			}
 		}
 
@@ -379,6 +433,8 @@ class Menu_Layout {
 			array_diff( self::clean_slugs( isset( $layout['more'] ) ? $layout['more'] : array() ), $clean['main'] )
 		);
 
+		$clean['hidden'] = self::clean_slugs( isset( $layout['hidden'] ) ? $layout['hidden'] : array() );
+
 		if ( isset( $layout['names'] ) && is_array( $layout['names'] ) ) {
 			foreach ( $layout['names'] as $slug => $name ) {
 				$slug = self::clean_slugs( array( (string) $slug ) );
@@ -462,12 +518,13 @@ class Menu_Layout {
 	 * Keeps what the editor could not show when its layout is saved.
 	 *
 	 * Menus of a deactivated plugin, or menus the saving user cannot see, are not
-	 * in the posted layout. Their section and name are carried over, and each one
-	 * stays after the menu it followed.
+	 * in the posted layout. Their section, name and visibility are carried over,
+	 * and each one stays after the menu it followed. The editor always lists the
+	 * separators the user added, so a missing one was removed.
 	 *
 	 * @param array $posted   Clean layout from the editor.
 	 * @param array $previous Clean layout saved before.
-	 * @return array{main: string[], more: string[], names: array<string, string>, more_label: string}
+	 * @return array{main: string[], more: string[], hidden: string[], names: array<string, string>, more_label: string}
 	 */
 	public static function merge_unlisted( array $posted, array $previous ) {
 		$listed = self::listed_keys( $posted );
@@ -478,6 +535,10 @@ class Menu_Layout {
 			foreach ( $previous[ $section ] as $slug ) {
 				$key  = self::normalize_slug( $slug );
 				$keys = array_map( array( __CLASS__, 'normalize_slug' ), $posted[ $section ] );
+
+				if ( ! isset( $listed[ $key ] ) && self::is_custom_separator( $slug ) ) {
+					continue;
+				}
 
 				if ( isset( $listed[ $key ] ) ) {
 					if ( in_array( $key, $keys, true ) ) {
@@ -492,23 +553,45 @@ class Menu_Layout {
 			}
 		}
 
-		$posted['names'] = self::merge_names( $posted['names'], $previous['names'], $listed );
+		$posted['names']  = self::merge_names( $posted['names'], $previous['names'], $listed );
+		$posted['hidden'] = self::merge_hidden( $posted['hidden'], $previous['hidden'], $listed );
 
 		return $posted;
 	}
 
 	/**
-	 * Saves new names without touching the saved order and placement.
+	 * Saves names and visibility without touching the saved order and placement.
 	 *
 	 * @param array $posted   Clean layout from the editor.
 	 * @param array $previous Clean layout saved before.
-	 * @return array{main: string[], more: string[], names: array<string, string>, more_label: string}
+	 * @return array{main: string[], more: string[], hidden: string[], names: array<string, string>, more_label: string}
 	 */
-	public static function rename_only( array $posted, array $previous ) {
-		$previous['names']      = self::merge_names( $posted['names'], $previous['names'], self::listed_keys( $posted ) );
+	public static function apply_details( array $posted, array $previous ) {
+		$listed = self::listed_keys( $posted );
+
+		$previous['names']      = self::merge_names( $posted['names'], $previous['names'], $listed );
+		$previous['hidden']     = self::merge_hidden( $posted['hidden'], $previous['hidden'], $listed );
 		$previous['more_label'] = $posted['more_label'];
 
 		return $previous;
+	}
+
+	/**
+	 * Posted hidden menus, plus hidden menus the editor did not list.
+	 *
+	 * @param string[]            $posted   Hidden menus from the editor.
+	 * @param string[]            $previous Saved hidden menus.
+	 * @param array<string, bool> $listed   Menus the editor listed.
+	 * @return string[]
+	 */
+	private static function merge_hidden( array $posted, array $previous, array $listed ) {
+		foreach ( $previous as $slug ) {
+			if ( ! isset( $listed[ self::normalize_slug( $slug ) ] ) && ! self::is_custom_separator( $slug ) ) {
+				$posted[] = $slug;
+			}
+		}
+
+		return array_values( array_unique( $posted ) );
 	}
 
 	/**

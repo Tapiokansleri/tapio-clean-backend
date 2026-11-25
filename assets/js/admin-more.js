@@ -75,7 +75,8 @@
 		apply(
 			wasOpen() ||
 				moreItems.some( function ( li ) {
-					return li.classList.contains( 'current' ) || li.classList.contains( 'wp-has-current-submenu' );
+					return ! li.classList.contains( 'tapio-hidden-item' ) &&
+						( li.classList.contains( 'current' ) || li.classList.contains( 'wp-has-current-submenu' ) );
 				} )
 		);
 

@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Tapio Clean Backend 1.2.0\n"
+"Project-Id-Version: Tapio Clean Backend 1.3.0\n"
 "Language: fi\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -11,8 +11,8 @@ msgstr ""
 msgid "Tapio Clean Backend"
 msgstr "Tapio Clean Backend"
 
-msgid "Arrange and rename the admin sidebar, keep less used menus under a More link, and read admin notices in an admin bar Notifications panel."
-msgstr "Järjestä ja nimeä ylläpidon sivupalkki, kerää harvemmin käytetyt valikot Lisää-linkin alle ja lue ylläpidon ilmoitukset yläpalkin Ilmoitukset-paneelista."
+msgid "Arrange, rename and hide admin sidebar items, keep less used menus under a More link, and read admin notices in an admin bar Notifications panel."
+msgstr "Järjestä, nimeä ja piilota ylläpidon sivupalkin kohtia, kerää harvemmin käytetyt Lisää-linkin alle ja lue ylläpidon ilmoitukset yläpalkin Ilmoitukset-paneelista."
 
 msgid "Notifications"
 msgstr "Ilmoitukset"
@@ -23,12 +23,56 @@ msgstr "Ei ilmoituksia"
 msgid "More"
 msgstr "Lisää"
 
+msgid "Edit sidebar menu"
+msgstr "Muokkaa sivupalkkia"
+
+msgid "Saving…"
+msgstr "Tallennetaan…"
+
+msgid "Saved"
+msgstr "Tallennettu"
+
+msgid "Saving failed. Check the connection, or reload the page."
+msgstr "Tallennus epäonnistui. Tarkista yhteys tai lataa sivu uudelleen."
+
+msgid "Try again"
+msgstr "Yritä uudelleen"
+
 msgid "Menu name"
 msgstr "Valikon nimi"
 
+#. translators: %s: original menu name
+msgid "Click to rename. Original name: %s"
+msgstr "Nimeä uudelleen klikkaamalla. Alkuperäinen nimi: %s"
+
+#. translators: %s: new menu name
+msgid "Name is now %s."
+msgstr "Nimi on nyt %s."
+
 #. translators: %s: menu name
-msgid "Move %s"
-msgstr "Siirrä: %s"
+msgid "Hide %s"
+msgstr "Piilota %s"
+
+#. translators: %s: menu name
+msgid "Show %s"
+msgstr "Näytä %s"
+
+#. translators: %s: menu name
+msgid "%s is now hidden."
+msgstr "%s on nyt piilotettu."
+
+#. translators: %s: menu name
+msgid "%s is shown again."
+msgstr "%s näkyy taas."
+
+msgid "Separator"
+msgstr "Erotin"
+
+msgid "Remove separator"
+msgstr "Poista erotin"
+
+msgid "A new separator was added above the More link. Drag it where you want it."
+msgstr "Uusi erotin lisättiin Lisää-linkin yläpuolelle. Raahaa se haluamaasi kohtaan."
 
 msgid "Sidebar"
 msgstr "Sivupalkki"
@@ -36,10 +80,6 @@ msgstr "Sivupalkki"
 #. translators: 1: menu name, 2: list name, 3: position, 4: number of menus in the list
 msgid "%1$s is now in %2$s, position %3$d of %4$d."
 msgstr "%1$s on nyt listassa %2$s kohdassa %3$d / %4$d."
-
-#. translators: %s: new menu name
-msgid "Name is now %s. Save changes to keep it."
-msgstr "Nimi on nyt %s. Säilytä se tallentamalla muutokset."
 
 msgid "Click again to restore the default menu and names"
 msgstr "Palauta oletusvalikko ja nimet klikkaamalla uudelleen"
@@ -74,35 +114,26 @@ msgstr "Ilmoituksia ei hävitetä. Ne näkyvät yläpalkissa, ja niiden määrä
 msgid "The sidebar could not be read on this screen."
 msgstr "Sivupalkkia ei voitu lukea tällä sivulla."
 
-msgid "Drag menus to change their order or to move them between the sidebar and More. Click a name to rename it; leave the name empty to get the original back. Changes apply to every user when you save."
-msgstr "Raahaa valikoita, kun haluat muuttaa niiden järjestystä tai siirtää niitä sivupalkin ja Lisää-valikon välillä. Nimeä valikko uudelleen klikkaamalla sen nimeä. Tyhjä nimi palauttaa alkuperäisen. Tallennetut muutokset koskevat kaikkia käyttäjiä."
+msgid "Drag to reorder. Items below the More link show when it is open. Click a name to rename it (an empty name restores the original), or the eye to hide it. Changes save as you make them and apply to every user."
+msgstr "Järjestä raahaamalla. Lisää-linkin alla olevat näkyvät, kun linkki on auki. Nimeä uudelleen klikkaamalla nimeä (tyhjä nimi palauttaa alkuperäisen) tai piilota silmäkuvakkeella. Muutokset tallentuvat heti ja koskevat kaikkia käyttäjiä."
 
-msgid "The More link is off. The menus in the More list follow the main ones once you have moved a menu and saved; until then the sidebar keeps the WordPress order."
-msgstr "Lisää-linkki on pois päältä. Kun olet siirtänyt valikkoa ja tallentanut, Lisää-listan valikot näkyvät päävalikoiden jälkeen. Siihen asti sivupalkki pitää WordPressin järjestyksen."
+msgid "The More link is off, so the items below it follow the main ones once you have moved something; until then the sidebar keeps the WordPress order."
+msgstr "Lisää-linkki on pois päältä. Kun olet siirtänyt jotakin, sen alla olevat näkyvät päävalikoiden jälkeen. Siihen asti sivupalkki pitää WordPressin järjestyksen."
 
-msgid "Always visible."
-msgstr "Aina näkyvissä."
+msgid "Keyboard: focus an item and use the up and down arrow keys to move it."
+msgstr "Näppäimistöllä: valitse kohta ja siirrä sitä ylös- ja alas-nuolilla."
 
-msgid "Click to rename"
-msgstr "Nimeä uudelleen klikkaamalla"
+msgid "Drag items here."
+msgstr "Raahaa kohtia tähän."
 
-msgid "Shown when the More link is open. Click the title to rename the link."
-msgstr "Näkyvät, kun Lisää-linkki on auki. Nimeä linkki uudelleen klikkaamalla otsikkoa."
-
-msgid "Drag menus here."
-msgstr "Raahaa valikoita tähän."
-
-msgid "Keyboard: focus a drag handle and use the up and down arrow keys to move a menu, and the right and left arrow keys to move it to More and back."
-msgstr "Näppäimistöllä: valitse raahauskahva. Ylös- ja alas-nuolet siirtävät valikkoa listassa, oikea nuoli siirtää sen Lisää-listaan ja vasen takaisin."
+msgid "New separator"
+msgstr "Uusi erotin"
 
 msgid "Restore default menu"
 msgstr "Palauta oletusvalikko"
 
 msgid "The sidebar editor needs JavaScript. Saving without it keeps the current menu."
 msgstr "Sivupalkin muokkaus vaatii JavaScriptin. Ilman sitä tallennus säilyttää nykyisen valikon."
-
-msgid "Separator"
-msgstr "Erotin"
 
 msgid "Settings saved."
 msgstr "Asetukset tallennettu."

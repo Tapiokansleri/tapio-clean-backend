@@ -4,11 +4,11 @@ Tags: admin, admin menu, admin menu editor, admin notices, admin bar
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.2.0
+Stable tag: 1.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Arrange and rename the admin sidebar, keep less used menus under a More link, and read admin notices in one place. Nothing is removed.
+Arrange, rename and hide admin sidebar items, keep less used ones under a More link, and read admin notices in one place.
 
 == Description ==
 
@@ -16,24 +16,27 @@ The WordPress admin gets crowded fast. Every plugin adds a top-level menu item, 
 
 = Nothing is removed =
 
-* **No menu is deleted or blocked.** Menus are only reordered, renamed or placed under a **More** link. Every item, every submenu and every link still works.
+* **No menu is deleted or blocked.** Menus are reordered, renamed, placed under a **More** link or hidden from the sidebar. Their pages, submenus and links keep working.
 * **No notice is thrown away.** Admin notices are moved into a **Notifications** panel in the admin bar, with a badge showing how many are waiting.
 * **No capabilities are changed.** Each user still sees exactly the menus their role allows.
-* **No content or other plugins are touched.** The plugin stores one option: its two switches, the sidebar order and your menu names.
+* **No content or other plugins are touched.** The plugin stores one option: its two switches, the sidebar order, your menu names, hidden items and added separators.
 * **No lock-in.** Deactivate it and the admin looks exactly as before. Uninstalling deletes the option.
 
 = Your sidebar, your way =
 
-On **Tools > Tapio Clean Backend** you see the sidebar as two lists, **Sidebar** and **More**:
+**Tools > Tapio Clean Backend** shows an editor that looks like your sidebar, in your admin color scheme, with the **More** link open:
 
-* **Drag** any menu, WordPress core menus included, to change its order or to move it between the lists. Separator lines can be moved within the sidebar.
-* **Click a name** to rename the menu. Leave the name empty to get the original back. Counts such as pending comments stay next to the new name.
-* **Rename the More link** by clicking the title of the More list.
-* **Restore default menu** brings back the starting layout and the original names.
+* **Drag** any item, WordPress core menus included, to change its order. Items below the More link go under More.
+* **Click a name** to rename it. An empty name brings the original back. Counts such as pending comments stay next to the new name. The More link can be renamed too.
+* **Click the eye** to hide an item from the sidebar, and again to show it. A hidden item is dimmed in the editor.
+* **New separator** adds a separator line you can drag anywhere. Added separators can be removed; WordPress's own can be hidden.
+* **Restore default menu** brings back the starting layout, names and visibility.
 
-Before you save your own layout, WordPress core menus are in the sidebar and plugin and custom post type menus are under More. A menu that appears later, for example from a newly activated plugin, goes to the end of More; a core menu goes into the sidebar next to its usual neighbour. Menus of a deactivated plugin keep their place and name.
+There is no Save button: every change is saved as you make it, and the sidebar next to the editor changes with it.
 
-The layout is shared by all users. Keyboard users can move menus from a drag handle with the arrow keys.
+Before you change the order, WordPress core menus are in the sidebar and plugin and custom post type menus are under More. A menu that appears later, for example from a newly activated plugin, goes to the end of More; a core menu goes into the sidebar next to its usual neighbour. Menus of a deactivated plugin keep their place, name and visibility.
+
+The layout is shared by all users. Hiding is not access control: a hidden page still opens by its address for users whose role allows it. If you hide Tools, a link to the editor appears in the admin bar under the site name. Keyboard users can move a focused item with the up and down arrow keys.
 
 = No flashing sidebar =
 
@@ -49,7 +52,7 @@ Some things stay on the page on purpose: hidden notices that WordPress shows lat
 
 * No custom tables and no post meta.
 * No external requests, no tracking, no analytics.
-* Without JavaScript the admin stays standard: every menu is visible and notices stay on the page.
+* Without JavaScript, menus under More are shown, hidden items stay hidden and notices stay on the page.
 * Network Admin screens are left as they are.
 
 = Translations =
@@ -71,11 +74,15 @@ Ships with a Finnish translation (`fi`).
 
 = Does this hide or remove my plugin menus? =
 
-No. Menus under **More** are one click away and work exactly as before.
+Nothing is removed, and nothing is hidden unless you hide it yourself with the eye in the editor. Menus under **More** are one click away and work exactly as before.
 
 = Can I move WordPress core menus under More? =
 
-Yes. Any top-level menu can go in either list.
+Yes. Any top-level menu can go anywhere.
+
+= Can I hide a menu? =
+
+Yes, with the eye in the editor. It only disappears from the sidebar; see "Hiding is not access control" above.
 
 = Can I rename submenu items? =
 
@@ -98,6 +105,12 @@ One option, `tapio_clean_backend_settings`. Whether you left **More** open is st
 Your admin returns to its default appearance immediately.
 
 == Changelog ==
+
+= 1.3.0 =
+* The editor looks like the real sidebar, in the user's admin color scheme, with More below the sidebar items.
+* Changes are saved as you make them; the Save button is gone, and the sidebar next to the editor updates at once.
+* Hide any item with the eye. Add your own separator lines and remove them.
+* Separators can also be placed under More.
 
 = 1.2.0 =
 * New sidebar editor: drag any top-level menu, WordPress core menus included, between the sidebar and More and into any order.

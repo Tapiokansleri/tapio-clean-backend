@@ -2,8 +2,8 @@
 /**
  * Plugin Name: Tapio Clean Backend
  * Plugin URI:  https://github.com/Tapiokansleri/tapio-clean-backend
- * Description: Arrange and rename the admin sidebar, keep less used menus under a More link, and read admin notices in an admin bar Notifications panel.
- * Version:     1.2.0
+ * Description: Arrange, rename and hide admin sidebar items, keep less used menus under a More link, and read admin notices in an admin bar Notifications panel.
+ * Version:     1.3.0
  * Author:      Tapio Kauranen
  * Author URI:  https://tapiokauranen.com
  * License:     GPL-2.0-or-later
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'TAPIO_CLEAN_BACKEND_VERSION', '1.2.0' );
+define( 'TAPIO_CLEAN_BACKEND_VERSION', '1.3.0' );
 define( 'TAPIO_CLEAN_BACKEND_FILE', __FILE__ );
 define( 'TAPIO_CLEAN_BACKEND_DIR', plugin_dir_path( __FILE__ ) );
 define( 'TAPIO_CLEAN_BACKEND_URL', plugin_dir_url( __FILE__ ) );

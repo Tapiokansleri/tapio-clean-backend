@@ -3,9 +3,13 @@
  * Applies the menu layout to the WordPress admin sidebar.
  *
  * Everything the sidebar shows is decided before WordPress prints it: the order
- * with the menu_order filter, the names and the More markers with the
- * add_menu_classes filter, and the More link as a real menu entry. The browser
- * paints the final sidebar the first time, so nothing jumps while loading.
+ * with the menu_order filter, the names, hidden menus and More markers with the
+ * add_menu_classes filter, and the More link and added separators as real menu
+ * entries. The browser paints the final sidebar the first time, so nothing jumps
+ * while loading.
+ *
+ * Hidden menus are only hidden with CSS. They stay in the menu, so their pages
+ * keep working and no one's access changes.
  *
  * @package Tapio\CleanBackend
  */
@@ -17,16 +21,23 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Sidebar order, names and the More section.
+ * Sidebar order, names, visibility and the More section.
  */
 class Admin_Menu {
 
 	/**
-	 * CSS class of the menus under More.
+	 * CSS class of the entries under More.
 	 *
 	 * @var string
 	 */
 	const MORE_ITEM_CLASS = 'tapio-more-item';
+
+	/**
+	 * CSS class of hidden entries.
+	 *
+	 * @var string
+	 */
+	const HIDDEN_CLASS = 'tapio-hidden-item';
 
 	/**
 	 * Menu slug of the More link. The hash keeps the link on the same page.
@@ -59,7 +70,7 @@ class Admin_Menu {
 	/**
 	 * Menus with their own names and icons, keyed by slug, for the settings page.
 	 *
-	 * @var array<string, array{title: string, icon: string, separator: bool}>
+	 * @var array<string, array{title: string, bubble: string, icon: string, separator: bool}>
 	 */
 	private $originals = array();
 
@@ -83,9 +94,12 @@ class Admin_Menu {
 		}
 
 		// Last, so the order and names apply to every menu other plugins add or move.
+		add_action( 'admin_menu', array( $this, 'add_custom_separators' ), PHP_INT_MAX );
 		add_filter( 'custom_menu_order', array( $this, 'enable_custom_order' ), PHP_INT_MAX );
 		add_filter( 'menu_order', array( $this, 'order_menu' ), PHP_INT_MAX );
 		add_filter( 'add_menu_classes', array( $this, 'decorate_menu' ), PHP_INT_MAX );
+		add_action( 'admin_enqueue_scripts', array( $this, 'add_visibility_style' ) );
+		add_action( 'admin_bar_menu', array( $this, 'add_editor_link' ), 90 );
 
 		if ( $this->with_more ) {
 			add_action( 'admin_menu', array( $this, 'add_more_link' ), PHP_INT_MAX );
@@ -115,6 +129,25 @@ class Admin_Menu {
 	 */
 	public function enable_custom_order( $enabled ) {
 		return $this->has_order() ? true : $enabled;
+	}
+
+	/**
+	 * Adds the user's own separator lines as menu entries.
+	 *
+	 * @return void
+	 */
+	public function add_custom_separators() {
+		global $menu;
+
+		if ( ! is_array( $menu ) ) {
+			return;
+		}
+
+		$settings = Settings::get();
+
+		foreach ( Menu_Layout::custom_separators( $settings['menu'] ) as $index => $slug ) {
+			$menu[ '999998.tapio' . $index ] = array( '', 'read', $slug, '', 'wp-menu-separator tapio-custom-separator' );
+		}
 	}
 
 	/**
@@ -188,7 +221,7 @@ class Admin_Menu {
 	}
 
 	/**
-	 * Marks the menus under More and applies custom names.
+	 * Applies custom names and marks the entries that are hidden or under More.
 	 *
 	 * Runs when WordPress has sorted and filtered the menu, just before it is printed.
 	 *
@@ -211,9 +244,10 @@ class Admin_Menu {
 			$in_more[ Menu_Layout::normalize_slug( $slug ) ] = true;
 		}
 
-		$this->originals = array();
-		$toggle_key      = null;
-		$has_more_items  = false;
+		$on_editor        = $this->is_editor_screen();
+		$this->originals  = array();
+		$toggle_key       = null;
+		$has_visible_more = false;
 
 		foreach ( $menu as $key => $item ) {
 			if ( ! is_array( $item ) || ! isset( $item[2] ) ) {
@@ -227,48 +261,61 @@ class Admin_Menu {
 				continue;
 			}
 
-			$separator          = self::is_separator_item( $item );
+			$separator             = self::is_separator_item( $item );
 			list( $text, $bubble ) = Menu_Layout::split_title( isset( $item[0] ) ? $item[0] : '' );
 
 			if ( ! isset( $this->originals[ $slug ] ) ) {
 				$this->originals[ $slug ] = array(
 					'title'     => '' !== $text ? $text : $slug,
+					'bubble'    => $bubble,
 					'icon'      => isset( $item[6] ) ? (string) $item[6] : '',
 					'separator' => $separator,
 				);
 			}
 
-			if ( $separator ) {
-				continue;
+			if ( ! $separator ) {
+				$name = Menu_Layout::name_for( $slug, $settings['menu']['names'] );
+				if ( '' !== $name ) {
+					$menu[ $key ][0] = esc_html( $name ) . ( '' !== $bubble ? ' ' . $bubble : '' );
+				}
 			}
 
-			$name = Menu_Layout::name_for( $slug, $settings['menu']['names'] );
-			if ( '' !== $name ) {
-				$menu[ $key ][0] = esc_html( $name ) . ( '' !== $bubble ? ' ' . $bubble : '' );
-			}
+			$hidden  = Menu_Layout::contains( $slug, $settings['menu']['hidden'] );
+			$classes = array();
 
 			if ( $this->with_more && isset( $in_more[ Menu_Layout::normalize_slug( $slug ) ] ) ) {
-				$menu[ $key ][4] = trim( ( isset( $item[4] ) ? $item[4] : '' ) . ' ' . self::MORE_ITEM_CLASS );
-				$has_more_items  = true;
+				$classes[]        = self::MORE_ITEM_CLASS;
+				$has_visible_more = $has_visible_more || ( ! $separator && ! $hidden );
+			}
+			if ( $hidden ) {
+				$classes[] = self::HIDDEN_CLASS;
+			}
+			if ( $on_editor ) {
+				// Lets the editor update the sidebar next to it as changes are saved.
+				$classes[] = 'tcb-key-' . Menu_Layout::key_for( $slug );
+			}
+
+			if ( $classes ) {
+				$menu[ $key ][4] = trim( ( isset( $item[4] ) ? $item[4] : '' ) . ' ' . implode( ' ', $classes ) );
 			}
 		}
 
 		if ( null !== $toggle_key ) {
-			$menu = $this->tidy_around_toggle( $menu, $toggle_key, $has_more_items );
+			$menu = $this->tidy_around_toggle( $menu, $toggle_key, $has_visible_more );
 		}
 
 		return $menu;
 	}
 
 	/**
-	 * Drops the More link when nothing is under it, and a separator right above it.
+	 * Hides the More link when nothing visible is under it, and drops a separator right above it.
 	 *
-	 * @param array      $menu           Top-level menu.
-	 * @param int|string $toggle_key     Array key of the More link.
-	 * @param bool       $has_more_items Whether any menu is under More.
+	 * @param array      $menu             Top-level menu.
+	 * @param int|string $toggle_key       Array key of the More link.
+	 * @param bool       $has_visible_more Whether any visible menu is under More.
 	 * @return array
 	 */
-	private function tidy_around_toggle( array $menu, $toggle_key, $has_more_items ) {
+	private function tidy_around_toggle( array $menu, $toggle_key, $has_visible_more ) {
 		$keys = array_keys( $menu );
 		$at   = array_search( $toggle_key, $keys, true );
 
@@ -278,11 +325,55 @@ class Admin_Menu {
 			--$at;
 		}
 
-		if ( ! $has_more_items ) {
-			unset( $menu[ $toggle_key ] );
+		if ( ! $has_visible_more ) {
+			$menu[ $toggle_key ][4] .= ' tapio-more-empty';
 		}
 
 		return $menu;
+	}
+
+	/**
+	 * Hides hidden entries and an empty More link. Applies without JavaScript too.
+	 *
+	 * @return void
+	 */
+	public function add_visibility_style() {
+		wp_add_inline_style( 'admin-menu', '#adminmenu > li.tapio-hidden-item, #adminmenu > li.tapio-more-empty { display: none !important; }' );
+	}
+
+	/**
+	 * Keeps the editor reachable from the admin bar when the Tools menu is hidden.
+	 *
+	 * @param \WP_Admin_Bar $wp_admin_bar Admin bar.
+	 * @return void
+	 */
+	public function add_editor_link( $wp_admin_bar ) {
+		$settings = Settings::get();
+
+		if ( ! current_user_can( 'manage_options' ) || ! Menu_Layout::contains( 'tools.php', $settings['menu']['hidden'] ) ) {
+			return;
+		}
+
+		$wp_admin_bar->add_node(
+			array(
+				'id'     => 'tapio-clean-backend-editor-link',
+				'parent' => 'site-name',
+				'title'  => esc_html__( 'Edit sidebar menu', 'tapio-clean-backend' ),
+				'href'   => admin_url( 'tools.php?page=' . Settings::PAGE ),
+			)
+		);
+	}
+
+	/**
+	 * Whether the current screen is the sidebar editor.
+	 *
+	 * @return bool
+	 */
+	private function is_editor_screen() {
+		global $pagenow;
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Only reads which screen is shown.
+		return 'tools.php' === $pagenow && isset( $_GET['page'] ) && Settings::PAGE === sanitize_key( wp_unslash( $_GET['page'] ) );
 	}
 
 	/**
@@ -354,28 +445,46 @@ class Admin_Menu {
 
 		foreach ( $sections as $section => $unused ) {
 			foreach ( $this->layout[ $section ] as $slug ) {
-				// Menus removed after the layout was resolved, such as doubled separators, are not listed.
-				if ( ! isset( $this->originals[ $slug ] ) || isset( $listed[ $slug ] ) ) {
+				$custom = Menu_Layout::is_custom_separator( $slug );
+
+				// The user's separators are always listed, also when WordPress dropped a doubled one.
+				// Other menus removed after the layout was resolved are not.
+				if ( ( ! $custom && ! isset( $this->originals[ $slug ] ) ) || isset( $listed[ $slug ] ) ) {
 					continue;
 				}
 
+				$original = $custom
+					? array(
+						'title'     => '',
+						'bubble'    => '',
+						'icon'      => '',
+						'separator' => true,
+					)
+					: $this->originals[ $slug ];
+
 				$listed[ $slug ]        = true;
 				$sections[ $section ][] = array_merge(
-					$this->originals[ $slug ],
+					$original,
 					array(
-						'slug' => $slug,
-						'name' => Menu_Layout::name_for( $slug, $settings['menu']['names'] ),
+						'slug'   => $slug,
+						'key'    => Menu_Layout::key_for( $slug ),
+						'custom' => $custom,
+						'name'   => Menu_Layout::name_for( $slug, $settings['menu']['names'] ),
+						'hidden' => Menu_Layout::contains( $slug, $settings['menu']['hidden'] ),
 					)
 				);
 			}
 		}
 
-		// Separators at either end of a list are not drawn in the sidebar, so they are not offered.
+		// WordPress's own separators at either end are not drawn, so they are not offered.
 		// Saving keeps them in the layout (see Menu_Layout::merge_unlisted()).
-		while ( $sections['main'] && ! empty( $sections['main'][0]['separator'] ) ) {
+		$is_end_separator = static function ( $item ) {
+			return $item['separator'] && ! $item['custom'];
+		};
+		while ( $sections['main'] && $is_end_separator( $sections['main'][0] ) ) {
 			array_shift( $sections['main'] );
 		}
-		while ( $sections['main'] && ! empty( $sections['main'][ count( $sections['main'] ) - 1 ]['separator'] ) ) {
+		while ( $sections['main'] && $is_end_separator( $sections['main'][ count( $sections['main'] ) - 1 ] ) ) {
 			array_pop( $sections['main'] );
 		}
 
